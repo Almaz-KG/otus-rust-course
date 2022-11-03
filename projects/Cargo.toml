@@ -1,0 +1,5 @@
+[workspace]
+members = [
+    "hw-000",
+    "hw-001",
+]

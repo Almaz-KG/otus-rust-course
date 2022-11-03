@@ -1,8 +1,8 @@
 # Otus Rust Course
 
-## Репозитория для проектов, выполненных в рамках курса [Rust Developer от Otus](https://otus.ru/lessons/rust-developer/)
+#### [Rust Developer от Otus](https://otus.ru/lessons/rust-developer/)
 
-Для каждого проекта или домашнего задания будет отведено отдельная папка
+Репозиторий для проектов, выполненных в рамках курса. Для каждого проекта или домашнего задания будет отведено отдельная папка
 
 ## CI/CD pipelines
 

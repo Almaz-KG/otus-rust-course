@@ -1,0 +1,45 @@
+image: "rust:latest"
+
+stages:
+  - build
+  - test
+  - publish
+
+variables:
+  GITLAB_CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE:latest
+  APP_USER_IDS: $USER_IDS
+  APP_USER_TOKENS: $USER_TOKENS
+  APP_URL: $GITLAB_URL
+  APP_DATE_DEPTH: $DATE_DEPTH
+  APP_PER_PAGE: $PER_PAGE_LIMIT
+
+default:
+  before_script:
+    - rustc --version
+    - cargo --version
+    - cd projects
+
+lint:
+  stage: test
+  script:
+    - rustup component add clippy
+    - cargo clippy -- -D warnings
+  only:
+    - merge_requests
+
+format:
+  stage: test
+  script:
+    - rustup component add rustfmt
+    - cargo fmt -- --check
+  only:
+    - merge_requests
+
+audit:
+ stage: test
+ script:
+   - cargo install cargo-audit
+   - cargo audit
+ only:
+   - merge_requests
+   - schedules

@@ -43,3 +43,12 @@ audit:
  only:
    - merge_requests
    - schedules
+
+lines_of_code:
+  stage: publish
+  script:
+    - cd .. 
+    - cargo install --git https://github.com/XAMPPRocky/tokei.git tokei
+    - tokei .
+  only:
+    - main

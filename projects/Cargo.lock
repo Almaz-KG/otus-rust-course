@@ -3,6 +3,10 @@
 version = 3
 
 [[package]]
+name = "data-structures"
+version = "0.1.0"
+
+[[package]]
 name = "hw-000"
 version = "0.1.0"
 

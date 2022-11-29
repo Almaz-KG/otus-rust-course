@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use crate::device::{Displayable, Reportable, Socket, Thermometer};
+use crate::device::{Reportable, Socket, Thermometer};
 use crate::house::{House, Room};
 
 mod device;
@@ -45,19 +45,19 @@ fn main() {
 
     println!("=========== Display ===============");
     println!("=========== Home ===============");
-    println!("{}", house1.display());
+    println!("{}", house1);
 
     println!("=========== Rooms ===============");
     let rooms = house1.get_rooms();
     for room in rooms {
-        println!("{}", room.display());
+        println!("{}", room);
     }
     println!("=========== Devices =============");
     let devices = house1
         .get_devices(&rooms[0])
         .expect("Unable to get devices list");
     for device in devices {
-        println!("{}", device.display());
+        println!("{}", device);
     }
 
     println!("=========== Report ===============");

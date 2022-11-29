@@ -1,4 +1,5 @@
-use crate::device::{Displayable, Reportable};
+use crate::device::Reportable;
+use std::fmt::{Display, Formatter};
 
 pub struct Room {
     name: String,
@@ -12,16 +13,18 @@ impl Room {
     }
 }
 
-impl Displayable for Room {
-    fn display(&self) -> String {
-        let devices_report: Vec<String> = self.devices.iter().map(|d| d.display()).collect();
+impl Display for Room {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
+        let devices_report: Vec<String> = self.devices.iter().map(|d| format!("{}", d)).collect();
 
-        format!(
+        let txt = format!(
             "Room: {}, Description: {}\n\t\t{}",
             self.name,
             self.description.clone().unwrap_or_default(),
             devices_report.join("\n\t\t")
-        )
+        );
+
+        write!(formatter, "{}", txt)
     }
 }
 
@@ -118,16 +121,17 @@ impl House {
     }
 }
 
-impl Displayable for House {
-    fn display(&self) -> String {
-        let rooms_report: Vec<String> = self.rooms.iter().map(|d| d.display()).collect();
+impl Display for House {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
+        let rooms_report: Vec<String> = self.rooms.iter().map(|d| format!("{}", d)).collect();
 
-        format!(
+        let txt = format!(
             "House: {}, Description: {}\n\t {}",
             self.name,
             self.description.clone().unwrap_or_default(),
             rooms_report.join("\n\t")
-        )
+        );
+        write!(formatter, "{}", txt)
     }
 }
 

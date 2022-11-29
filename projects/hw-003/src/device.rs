@@ -1,10 +1,6 @@
 use std::fmt::{Display, Formatter, Result};
 
-pub trait Displayable {
-    fn display(&self) -> String;
-}
-
-pub trait Reportable: Displayable {
+pub trait Reportable: Display {
     fn report(&self) -> String;
 }
 
@@ -65,15 +61,17 @@ impl Default for Socket {
     }
 }
 
-impl Displayable for Socket {
-    fn display(&self) -> String {
-        format!(
+impl Display for Socket {
+    fn fmt(&self, formatter: &mut Formatter) -> Result {
+        let txt = format!(
             "Socket: {}, {}, {}, {}",
             self.name,
             self.description.clone().unwrap_or_default(),
             self.power_consumption,
             self.status
-        )
+        );
+
+        write!(formatter, "{}", txt)
     }
 }
 
@@ -102,13 +100,15 @@ impl Thermometer {
     }
 }
 
-impl Displayable for Thermometer {
-    fn display(&self) -> String {
-        format!(
+impl Display for Thermometer {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> Result {
+        let txt = format!(
             "Thermometer: {}, {}",
             self.name,
             self.description.clone().unwrap_or_default()
-        )
+        );
+
+        write!(formatter, "{}", txt)
     }
 }
 

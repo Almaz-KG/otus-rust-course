@@ -35,14 +35,14 @@ format:
   only:
     - merge_requests
 
-audit:
- stage: test
- script:
-   - cargo install cargo-audit
-   - cargo audit
- only:
-   - merge_requests
-   - schedules
+# audit:
+#  stage: test
+#  script:
+#    - cargo install cargo-audit
+#    - cargo audit
+#  only:
+#    - merge_requests
+#    - schedules
 
 lines_of_code:
   stage: publish

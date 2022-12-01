@@ -13,5 +13,3 @@ pub mod home;
 /// It might be somehow useful for end user, but I'm not sure
 /// about it.
 pub mod room;
-
-

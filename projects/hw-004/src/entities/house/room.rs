@@ -30,7 +30,9 @@ impl Display for Room {
         let txt = format!(
             "Room: {}, Description: {}\n\t\t{}",
             self.name,
-            self.description.clone().unwrap_or("[No description]".to_string()),
+            self.description
+                .clone()
+                .unwrap_or_else(|| "[No description]".to_string()),
             devices_report.join("\n\t\t")
         );
 
@@ -51,7 +53,6 @@ impl Reportable for Room {
         )
     }
 }
-
 
 /// A helper struct for implementing builder pattern over the [Room]
 /// struct. It encapsulates an internal structure of the Room

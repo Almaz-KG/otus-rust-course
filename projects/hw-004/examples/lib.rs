@@ -1,8 +1,7 @@
+use hw_004::entities::devices::socket::Socket;
+use hw_004::entities::devices::thermometer::Thermometer;
 use hw_004::entities::house::home::Home;
 use hw_004::entities::house::room::Room;
-use hw_004::entities::devices::thermometer::Thermometer;
-use hw_004::entities::devices::socket::Socket;
-
 
 fn show_usage_of_home_entity() {
     let home = Home::build()
@@ -25,9 +24,7 @@ fn show_usage_of_room_entity() {
 }
 
 fn show_usage_of_socket_entity() {
-    let socket = Socket::new(
-        "Main light socket",
-        "Located near the entry door");
+    let socket = Socket::new("Main light socket", "Located near the entry door");
 
     println!("{}", socket);
 }
@@ -40,7 +37,6 @@ fn show_usage_of_thermometer_entity() {
 
     println!("{}", thermometer);
 }
-
 
 fn main() {
     show_usage_of_home_entity();

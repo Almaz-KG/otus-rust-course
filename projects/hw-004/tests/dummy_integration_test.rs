@@ -1,15 +1,14 @@
-use hw_004::entities::house::room::Room;
-use hw_004::entities::house::home::Home;
 use hw_004::entities::devices::socket::Socket;
 use hw_004::entities::devices::thermometer::Thermometer;
-
+use hw_004::entities::house::home::Home;
+use hw_004::entities::house::room::Room;
 
 /// Super dummy integration test. I'm tired to writing the texts here,
 /// so, I'll just leave it `as-is` with the hope that sometime in the future
 /// we'll come up with the proper tests here. So, please believe me, it will be fixed
 
 #[test]
-fn first_integration_test_ever(){
+fn first_integration_test_ever() {
     let living_room = Room::build()
         .with_name("Living room")
         .with_description("Living room with 48 sq meter size")
@@ -53,7 +52,6 @@ fn first_integration_test_ever(){
 
     let rooms = house.get_rooms();
     assert_eq!(rooms.len(), 2);
-
 
     let devices = house
         .get_devices(&rooms[0])

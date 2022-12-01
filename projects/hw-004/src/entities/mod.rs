@@ -4,7 +4,6 @@
 //! intentional use case. The name of the submodule
 //! should give you the full picture of the purpose of the module.
 
-
 /// A [house] submodule contains entities belong to house entity, such
 /// as `Home`, `Room`, etc. Each entity should contain its own builder, so
 /// the usage of the entity should be super easy and obvious for end user

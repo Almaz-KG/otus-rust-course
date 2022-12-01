@@ -1,6 +1,6 @@
-use std::fmt::{Display, Formatter};
 use crate::entities::house::room::Room;
 use crate::entities::reportable::Reportable;
+use std::fmt::{Display, Formatter};
 
 /// A [Home] struct represents the Smart House wrapper.
 /// Each home must contain a `name`, an optional `description`, and
@@ -16,7 +16,6 @@ pub struct Home {
 
 /// An implementation for [Home] struct
 impl Home {
-
     /// A builder function for easy build of the Home instance.
     /// It returns a [HomeBuilder] struct which wraps all internal
     /// logic for building an instance. It implements commonly
@@ -61,7 +60,9 @@ impl Display for Home {
         let txt = format!(
             "House: {}, Description: {}\n\t {}",
             self.name,
-            self.description.clone().unwrap_or("[No description]".to_string()),
+            self.description
+                .clone()
+                .unwrap_or_else(|| "[No description]".to_string()),
             rooms_report.join("\n\t")
         );
         write!(formatter, "{}", txt)

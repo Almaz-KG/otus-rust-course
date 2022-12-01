@@ -1,5 +1,5 @@
-use std::fmt::{Display, Formatter, Result};
 use crate::entities::reportable::Reportable;
+use std::fmt::{Display, Formatter, Result};
 
 /// A super short and stupid wrapper around the Thermometer entity.
 /// In theory and the future implementations, it should become more
@@ -14,7 +14,6 @@ pub struct Thermometer {
 /// A thermometer struct implementation, it mostly wrapper and dummy stub
 /// logic inside each method.
 impl Thermometer {
-
     /// A fake implementation of the `measure` function for the
     /// given thermometer instance. The current implementation gives
     /// a random number from [0.. 1.0). I don't expect that the logic

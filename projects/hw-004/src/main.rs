@@ -1,7 +1,7 @@
 // #![allow(dead_code)]
 
-use hw_004::entities::house::{home::Home, room::Room};
 use hw_004::entities::devices::{socket::Socket, thermometer::Thermometer};
+use hw_004::entities::house::{home::Home, room::Room};
 use hw_004::entities::reportable::Reportable;
 
 fn main() {

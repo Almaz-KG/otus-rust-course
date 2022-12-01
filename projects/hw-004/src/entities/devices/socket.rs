@@ -40,7 +40,6 @@ pub struct Socket {
 /// are super obvious, but I must to describe all of them to make the documentation
 /// full and fit the high standards of the rust library docs.
 impl Socket {
-
     /// The associated function for creating a new instance of the smart Socket
     /// It will create an instance with the given name and description. It will
     /// create a clone of each given parameter, so be careful for memory leaks
@@ -80,7 +79,6 @@ impl Socket {
         rand::random()
     }
 }
-
 
 /// A Default implementation for the Socket struct. All the fields will be set by
 /// type default implementation, expect the name of the Socket will have the `Default socket`

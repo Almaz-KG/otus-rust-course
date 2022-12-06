@@ -6,3 +6,7 @@ description = "A blazingly fast torrent client"
 authors = ["Almaz Murzabekov @ et al"]
 
 [dependencies]
+serde_bencode = "^0.2.3"
+serde = "^1.0.0"
+serde_derive = "^1.0.0"
+serde_bytes = "0.11"

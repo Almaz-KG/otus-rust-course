@@ -5,4 +5,6 @@ members = [
     "hw-002",
     "hw-003",
     "hw-004",
+
+    "torrentino",
 ]

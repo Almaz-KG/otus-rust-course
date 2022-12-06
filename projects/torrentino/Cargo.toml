@@ -1,0 +1,8 @@
+[package]
+name = "torrentino"
+edition = "2021"
+version = "0.0.1"
+description = "A blazingly fast torrent client"
+authors = ["Almaz Murzabekov @ et al"]
+
+[dependencies]

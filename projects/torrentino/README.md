@@ -14,3 +14,11 @@ inspiration was taken from [How to make your own bittorrent client](https://alle
 - CLI client
 - desktop application
 - web client
+
+### Resources
+1. [BitTorrentSpecification](https://wiki.theory.org/BitTorrentSpecification) - Detailed and very readable unofficial
+bittorrent specification
+1. [UDP Tracker Protocol for BitTorrent](http://www.bittorrent.org/beps/bep_0015.html) - An official specification of
+bit torrent protocol. I recommend to read unofficial one first, just because is more understandable from newbies
+point of view.
+1. [The BitTorrent Protocol](https://www.morehawes.co.uk/old-guides/the-bittorrent-protocol) Another good high level explanation of the BitTorrent protocol

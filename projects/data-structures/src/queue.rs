@@ -1,15 +1,12 @@
-#[derive(Debug)]
+#[warn(dead_code)]
+#[derive(Debug, Default)]
 pub struct Queue<T> {
-
-    queue: Vec<T>
-
+    queue: Vec<T>,
 }
 
 impl<T> Queue<T> {
     pub fn new() -> Queue<T> {
-        Queue{
-            queue: vec![]
-        }
+        Queue { queue: vec![] }
     }
 
     pub fn enqueue(&mut self, item: T) {
@@ -41,11 +38,9 @@ impl<T> Queue<T> {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::Queue;
-
 
     #[test]
     fn it_works() {

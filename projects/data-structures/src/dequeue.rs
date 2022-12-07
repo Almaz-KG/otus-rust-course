@@ -1,29 +1,32 @@
-//! The dequeue in data structure stands for Double Ended Queue
+#![allow(dead_code)]
+#![allow(unused)]
 
-
+/// The dequeue in data structure stands for Double Ended Queue
 #[derive(Debug)]
 pub struct Dequeue<T> {
     pub size: usize,
     pub capacity: usize,
-    
+
     buffer: Vec<T>,
     head_index: i32,
     tail_index: i32,
 }
 
-
 impl<T> Dequeue<T> {
+    #![allow(clippy::uninit_vec)]
     fn new() -> Self {
         let capacity = 64;
         let mut vect = Vec::with_capacity(capacity);
-        unsafe { vect.set_len(capacity); }
+        unsafe {
+            vect.set_len(capacity);
+        }
 
         Self {
             capacity,
             size: 0,
             buffer: vect,
             head_index: 0,
-            tail_index: 0
+            tail_index: 0,
         }
     }
 
@@ -35,7 +38,7 @@ impl<T> Dequeue<T> {
     fn is_empty(&self) -> bool {
         self.size == 0
     }
-    
+
     /// This function is used to insert element at the front end of the deque in data structure
     fn add_to_head(&mut self, item: T) {
         if self.is_full() {
@@ -66,10 +69,9 @@ impl<T> Dequeue<T> {
             self.buffer[self.tail_index as usize] = item;
             self.size += 1;
         }
-
     }
-    
-    /// This function is used to delete elements from the front end of the deque in data structure 
+
+    /// This function is used to delete elements from the front end of the deque in data structure
     fn remove_from_head(&mut self) {
         if self.is_empty() {
             panic!("An empty dequeue")
@@ -85,10 +87,10 @@ impl<T> Dequeue<T> {
             self.size -= 1;
         }
     }
-    
+
     /// This function is used to delete elements from the rear end of the deque in data structure
     fn remove_from_tail(&mut self) {
-        if self.is_empty(){
+        if self.is_empty() {
             panic!("An empty dequeue")
         } else {
             if self.tail_index == 0 {
@@ -119,15 +121,13 @@ impl<T> Dequeue<T> {
     }
 }
 
-
-
 #[cfg(test)]
 mod tests {
     use super::Dequeue;
-    
+
     #[test]
-    fn add_to_head(){
-        let mut dequeue:Dequeue<i32> = Dequeue::new();
+    fn add_to_head() {
+        let mut dequeue: Dequeue<i32> = Dequeue::new();
 
         for i in 0..dequeue.capacity {
             dequeue.add_to_head(i as i32);
@@ -136,8 +136,8 @@ mod tests {
 
     #[test]
     #[should_panic]
-    fn add_to_head_in_full_state_must_panic(){
-        let mut dequeue:Dequeue<i32> = Dequeue::new();
+    fn add_to_head_in_full_state_must_panic() {
+        let mut dequeue: Dequeue<i32> = Dequeue::new();
 
         for i in 0..=dequeue.capacity {
             dequeue.add_to_head(i as i32);
@@ -145,7 +145,7 @@ mod tests {
     }
 
     #[test]
-    fn add_to_tail(){
+    fn add_to_tail() {
         let mut dequeue: Dequeue<usize> = Dequeue::new();
 
         for i in 0..dequeue.capacity {
@@ -155,16 +155,16 @@ mod tests {
 
     #[test]
     #[should_panic]
-    fn add_to_tail_in_full_state_must_panic(){
+    fn add_to_tail_in_full_state_must_panic() {
         let mut dequeue: Dequeue<usize> = Dequeue::new();
 
         for i in 0..=dequeue.capacity {
             dequeue.add_to_tail(i);
         }
     }
-    
+
     #[test]
-    fn remove_from_head(){
+    fn remove_from_head() {
         let mut dequeue: Dequeue<usize> = Dequeue::new();
 
         dequeue.add_to_head(1);
@@ -175,13 +175,13 @@ mod tests {
 
     #[test]
     #[should_panic]
-    fn remove_from_head_in_empty_state_must_panic(){
+    fn remove_from_head_in_empty_state_must_panic() {
         let mut dequeue: Dequeue<usize> = Dequeue::new();
         dequeue.remove_from_head()
     }
 
     #[test]
-    fn remove_from_tail(){
+    fn remove_from_tail() {
         let mut dequeue: Dequeue<usize> = Dequeue::new();
 
         dequeue.add_to_tail(1);
@@ -189,16 +189,16 @@ mod tests {
         dequeue.remove_from_tail();
         assert_eq!(0, dequeue.size);
     }
-    
+
     #[test]
     #[should_panic]
-    fn remove_from_tail_in_empty_state_must_panic(){
+    fn remove_from_tail_in_empty_state_must_panic() {
         let mut dequeue: Dequeue<usize> = Dequeue::new();
         dequeue.remove_from_tail();
     }
 
     #[test]
-    fn get_head(){
+    fn get_head() {
         // let mut dequeue: Dequeue<usize> = Dequeue::new();
 
         // assert_eq!(None, dequeue.get_head());

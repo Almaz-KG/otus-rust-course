@@ -15,7 +15,7 @@ enum NodeColor {
 #[derive(Debug, Eq, PartialEq)]
 pub struct Node<T> {
     value: T,
-    // Option, for case when the Node is root of the tree
+    // Option, for the case when the Node is root of the tree
     parent: Option<Rc<RefCell<Node<T>>>>,
     left: Option<Rc<RefCell<Node<T>>>>,
     right: Option<Rc<RefCell<Node<T>>>>,
@@ -36,20 +36,20 @@ where
         }
     }
 
-    pub fn black(value: T, parent: &Rc<RefCell<Node<T>>>) -> Self {
+    pub fn black(value: T, parent: Rc<RefCell<Node<T>>>) -> Self {
         Self {
             value,
-            parent: Some(Rc::clone(parent)),
+            parent: Some(parent.clone()),
             left: None,
             right: None,
             color: NodeColor::Black
         }
     }
 
-    pub fn red(value: T, parent: &Rc<RefCell<Node<T>>>) -> Self {
+    pub fn red(value: T, parent: Rc<RefCell<Node<T>>>) -> Self {
         Self {
             value,
-            parent: Some(Rc::clone(parent)),
+            parent: Some(parent.clone()),
             left: None,
             right: None,
             color: NodeColor::Red
@@ -64,7 +64,7 @@ where
         if self.value > *value {
             return match self.left {
                 Some(ref left) => {
-                    let node: &RefCell<Node<T>> = left.borrow();
+                    let node: RefCell<Node<T>> = *(left.borrow());
                     return (*node).borrow().find(value);
                 },
                 None => None,
@@ -86,7 +86,7 @@ where
     /// 1. Rotation the nodes. Rotation means changing relative order and place of some part
     /// of the tree.
     fn insert(&mut self, value: T) {
-        fn find_rc<'a, T>(node: &'a Node<T>) -> &'a Rc<RefCell<Node<T>>> {
+        fn find_rc<T>(node: &Node<T>) -> Rc<RefCell<Node<T>>> {
             todo!()
         }
 
@@ -98,7 +98,7 @@ where
                     (*node).borrow().insert(value)
                 },
                 _ => {
-                    let rc: &Rc<RefCell<Node<T>>> = find_rc(&self);
+                    let rc: Rc<RefCell<Node<T>>> = find_rc(&self);
                     let right_node = Some(Rc::new(RefCell::new(Node::red(value, rc))));
                     self.right = right_node;
                 },
@@ -109,7 +109,7 @@ where
                     (*node).borrow().insert(value)
                 },
                 _ => {
-                    let rc: &Rc<RefCell<Node<T>>> = find_rc(&self);
+                    let rc: Rc<RefCell<Node<T>>> = find_rc(&self);
                     let left_node = Some(Rc::new(RefCell::new(Node::red(value, rc))));
                     self.left = left_node;
                 },
@@ -252,7 +252,10 @@ impl<T: Ord + Debug> RedBlackTree<T> {
                 None => return 0,
                 Some(root) => {
                     let node: &RefCell<Node<T>> = root.borrow();
-                    1 + height(&(*node).borrow().left) + height(&(*node).borrow().right)
+                    let l_h = height(&(*node).borrow().left);
+                    let r_h = height(&(*node).borrow().right);
+
+                    1 + std::cmp::max(l_h, r_h)
                 },
             }
         }

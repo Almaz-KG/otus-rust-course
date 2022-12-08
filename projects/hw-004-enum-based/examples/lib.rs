@@ -1,5 +1,5 @@
-use hw_004_enum_based::entities::house::{Home, Room};
 use hw_004_enum_based::entities::devices::{Socket, Thermometer};
+use hw_004_enum_based::entities::house::{Home, Room};
 
 fn show_usage_of_home_entity() {
     let home = Home::build()

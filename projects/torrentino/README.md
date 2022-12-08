@@ -12,18 +12,18 @@ with end user and the envirounment arount the application. There are three types
 `must to have` due the limit of time for project implementation. Optional delivery types might be implemented (or
 might not be implemented) depending on remaining time till the end of the course.
 
-1. [must to have] cli client for Macos
-1. [optional] desktop application for Macos
-1. [optional] web app (with backend and front-end)
+1. [ ] [must to have] cli client for Macos
+1. [ ] [optional] desktop application for Macos
+1. [ ] [optional] web app (with backend and front-end)
 
 ### Must to have feature list ![progress](https://progress-bar.dev/0/?scale=3&width=120&color=babaca&suffix=%20of%203)
 
 As the header states, the following list contains the major features, without them the result of the
 project will be useless. These features can be considered as first priority tasks.
 
-1. open and display internals of the given *.torrent file 
-1. interact with torrent-server
-1. download and save file from torrent-peers
+1. [ ] open and display internals of the given *.torrent file 
+1. [ ] interact with torrent-server
+1. [ ] download and save file from torrent-peers
 
 ### Nice to have feature list ![progress](https://progress-bar.dev/0/?scale=6&width=120&color=babaca&suffix=%20of%206)
 

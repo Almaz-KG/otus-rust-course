@@ -24,11 +24,15 @@ build:
   script:
     - cargo build
     - cargo build --examples
+  only:
+    - merge_requests
 
 test:
   stage: test
   script:
     - cargo test
+  only:
+    - merge_requests
 
 lint:
   stage: test

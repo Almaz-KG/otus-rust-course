@@ -1,8 +1,8 @@
 ## Torrentino
 
 
-This is a blazingly fast bit torrent client written in pure and ideomatic Rust. Torrentino project is the final part
-of  the [Otus Rust Developer Course](https://otus.ru/lessons/rust-developer/).
+A blazingly fast bit torrent client written in pure and ideomatic Rust. Torrentino is the final project of the 
+[Otus Rust Developer Course](https://otus.ru/lessons/rust-developer/).
 
 
 ### The types of deliveries ![progress](https://progress-bar.dev/0/?scale=3&width=120&color=babaca&suffix=%20of%203)

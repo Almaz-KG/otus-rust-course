@@ -46,6 +46,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "hw-004-enum-based"
+version = "0.1.0"
+dependencies = [
+ "rand",
+]
+
+[[package]]
 name = "libc"
 version = "0.2.137"
 source = "registry+https://github.com/rust-lang/crates.io-index"

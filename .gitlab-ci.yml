@@ -19,6 +19,17 @@ default:
     - cargo --version
     - cd projects
 
+build:
+  stage: build
+  script:
+    - cargo build
+    - cargo build --examples
+
+test:
+  stage: test
+  script:
+    - cargo test
+
 lint:
   stage: test
   script:

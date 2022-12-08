@@ -5,7 +5,7 @@ A blazingly fast bit torrent client written in pure and ideomatic Rust. Torrenti
 [Otus Rust Developer Course](https://otus.ru/lessons/rust-developer/).
 
 
-### The types of deliveries ![progress](https://progress-bar.dev/0/?scale=3&width=120&color=babaca&suffix=%20of%203)
+### Delivery types ![progress](https://progress-bar.dev/0/?scale=3&width=120&color=babaca&suffix=%20of%203)
 
 The result of this project can be delivered to end used in different types. These types will vary by the interaction
 with end user, and the envirounment arount the application. There are three types, but only cli options as marked as

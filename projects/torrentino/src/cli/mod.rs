@@ -1,11 +1,5 @@
 mod cli_args;
+mod cli;
 
 pub use cli_args::Arguments;
-
-pub struct CLI {
-
-}
-
-impl CLI {
-
-}
+pub use cli::Cli;

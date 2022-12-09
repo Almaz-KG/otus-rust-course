@@ -1,11 +1,12 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
-use torrentino::cli::Arguments;
+
+use torrentino::cli::{Arguments, Cli};
 
 use clap::Parser;
 
-fn main() {
-
+fn main() -> Result<(), String> {
     let arguments = Arguments::parse();
-    println!("{:?}", arguments);
+    let cli = Cli::new(arguments);
+    cli.process()
 }

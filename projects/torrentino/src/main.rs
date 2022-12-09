@@ -1,9 +1,11 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
-use torrentino::cli::CLI;
+use torrentino::cli::Arguments;
+
+use clap::Parser;
 
 fn main() {
-    // let cli = CLI;
 
-    println!("Hello world");
+    let arguments = Arguments::parse();
+    println!("{:?}", arguments);
 }

@@ -56,6 +56,8 @@ impl Cli {
 
         let torrent = self.parse_torrent_file()?;
 
+        println!("{}", torrent);
+
         let (host, port) = Cli::parse_announce(
             &torrent
                 .announce

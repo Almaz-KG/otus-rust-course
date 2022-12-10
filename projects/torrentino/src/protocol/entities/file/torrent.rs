@@ -6,6 +6,8 @@ use serde_derive::Deserialize;
 use std::convert::TryFrom;
 use std::fs::File;
 use std::io::Read;
+use std::fmt::{Display, Formatter, Result as FmtResult };
+use chrono::{NaiveDateTime, DateTime, Utc};
 
 #[derive(Debug, Deserialize)]
 pub struct Torrent {
@@ -45,6 +47,65 @@ impl TryFrom<String> for Torrent {
             .map_err(|e| format!("Unable deserialize the bencode file: {e}"))?;
 
         Ok(torrent)
+    }
+}
+
+impl Display for Torrent {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> FmtResult {
+        fn write_announce_list(announce_list: &Vec<Vec<String>>, formatter: &mut Formatter<'_>) {
+            if !announce_list.is_empty() {
+                write(
+                    &format!("Tier 1: {}", &announce_list[0][0]),
+                      &format!("Announce List"),
+                    formatter);
+
+                for (index, tracker) in announce_list.iter().skip(1).enumerate() {
+                    write(
+                        &format!("Tier {}: {}", index + 2, &tracker[0]),
+                        &format!("{:20}", ""),
+                        formatter)
+                }
+            }
+        }
+
+        fn write<T: Display>(value: &T, name: &str, formatter: &mut Formatter<'_>){
+            formatter.write_str(&format!("{:20} {}\n", name, value));
+        }
+
+        fn write_option<T: Display>(value: Option<&T>, name: &str, formatter: &mut Formatter<'_>){
+            value.as_ref().map(|v| write(v, name, formatter));
+        }
+
+        write(&self.info.name, "Name", formatter);
+        write_option(self.comment.as_ref(), "Comment", formatter);
+        write_option(self.creation_date.as_ref().map(|timestamp| {
+            // Create a NaiveDateTime from the timestamp
+            let naive = NaiveDateTime::from_timestamp_opt(*timestamp, 0)
+                .expect("invalid or out-of-range datetime");
+
+            // Create a normal DateTime from the NaiveDateTime
+            let datetime: DateTime<Utc> = DateTime::from_utc(naive, Utc);
+
+            // Format the datetime how you want
+            let newdate = datetime.format("%Y-%m-%d %H:%M:%S UTC");
+            format!("{}", newdate)
+        }).as_ref(), "Creation Date", formatter);
+        write_option(self.created_by.as_ref(), "Created By", formatter);
+        // write_option(self.info..as_ref(), "Info Hash", formatter);
+        // write_option(self.info..as_ref(), "Torrent size", formatter);
+        // write_option(self.info..as_ref(), "Content size", formatter);
+        write(&self.info.private.unwrap_or_default(), "Private", formatter);
+        write_option(self.announce.as_ref(), "Tracker", formatter);
+        let default_announce_list = vec![Vec::new()];
+        let announce_list = self.announce_list.as_ref()
+            .unwrap_or(&default_announce_list);
+        write_announce_list(announce_list, formatter);
+
+        // write_option(self.info..as_ref(), "Piece Size", formatter);
+        // write(self.info.pieces.as_ref(), "Piece Count", formatter);
+        write(&self.info.files.as_ref().map(|v| v.len()).unwrap_or_default(), "Files Count", formatter);
+
+        FmtResult::Ok(())
     }
 }
 

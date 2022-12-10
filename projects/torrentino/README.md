@@ -30,7 +30,7 @@ project will be useless. These features can be considered as first priority task
 
 1. [ ] parallel downloads with progress bar
 1. [ ] download only chosen part of torrent
-1. [ ] act as a torrent peer for downloaded files
+1. [ ] act as a torrent peer/seed for downloaded files
 1. [ ] pause and continue download processes
 1. [ ] for cli version provide possibility to install via homebrew (or apt-get) [Instruction](https://docs.brew.sh/Adding-Software-to-Homebrew#casks)
 
@@ -46,3 +46,4 @@ bittorrent specification
 bit torrent protocol. I recommend to read unofficial one first, just because is more understandable from newbies
 point of view.
 1. [The BitTorrent Protocol](https://www.morehawes.co.uk/old-guides/the-bittorrent-protocol) Another good high level explanation of the BitTorrent protocol
+1. [Writing a Bittorrent engine in Rust](https://mandreyel.github.io/posts/rust-bittorrent-engine/)

@@ -1,2 +1,2 @@
-pub mod protocol;
 pub mod cli;
+pub mod protocol;

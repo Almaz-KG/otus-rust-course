@@ -1,5 +1,5 @@
-mod cli_args;
 mod cli;
+mod cli_args;
 
-pub use cli_args::Arguments;
 pub use cli::Cli;
+pub use cli_args::Arguments;

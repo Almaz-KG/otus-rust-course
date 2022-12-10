@@ -1,8 +1,8 @@
-use std::net::{UdpSocket, SocketAddr, ToSocketAddrs};
-use crate::protocol::entities::ConnectionRequest;
 use crate::protocol::entities::AnnounceResponse;
+use crate::protocol::entities::ConnectionRequest;
 use crate::protocol::entities::ConnectionType;
 use std::io;
+use std::net::{SocketAddr, ToSocketAddrs, UdpSocket};
 use std::time::Duration;
 
 #[derive(Debug)]
@@ -12,12 +12,17 @@ pub struct UdpClient {
     remote_host: String,
     remote_port: u16,
 
-    socket: Option<UdpSocket>
+    socket: Option<UdpSocket>,
 }
 
 impl UdpClient {
     pub fn new(local_port: u16, remote_host: String, remote_port: u16) -> Self {
-        Self { local_port, remote_host, remote_port, socket: None }
+        Self {
+            local_port,
+            remote_host,
+            remote_port,
+            socket: None,
+        }
     }
 
     pub fn get_peers_list(&mut self) -> Result<Vec<String>, String> {
@@ -30,7 +35,6 @@ impl UdpClient {
         // Get the announce response and extract the peers list
 
         todo!()
-
     }
 
     fn init_socket(&mut self) {
@@ -47,8 +51,7 @@ impl UdpClient {
             "[::]:0"
         };
 
-        let socket = UdpSocket::bind(&bind_addr)
-            .expect("Unable open UDP socket");
+        let socket = UdpSocket::bind(&bind_addr).expect("Unable open UDP socket");
 
         let remote_address = format!("{}:{}", self.remote_host, self.remote_port);
         println!("{}", remote_address);
@@ -72,12 +75,13 @@ impl UdpClient {
 
         let send = match socket.send(&cr_code) {
             io::Result::Err(e) => Err(format!("{}", e)),
-            io::Result::Ok(size) => Ok(size)
+            io::Result::Ok(size) => Ok(size),
         }?;
         println!("{}", send);
 
         let mut buffer = [0u8; 16];
-        socket.recv_from(&mut buffer)
+        socket
+            .recv_from(&mut buffer)
             .expect("Could not read into buffer");
 
         // let (number_of_bytes, src_addr) = socket
@@ -87,14 +91,10 @@ impl UdpClient {
         // println!("{:?}", number_of_bytes);
         println!("{:?}", buffer);
 
-
         todo!()
     }
 
     fn make_announce_request(&self, connection_id: &str) -> Result<AnnounceResponse, String> {
         todo!()
     }
-
-
-
 }

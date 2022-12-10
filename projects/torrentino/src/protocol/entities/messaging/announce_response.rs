@@ -1,3 +1,1 @@
-pub struct AnnounceResponse {
-
-}
+pub struct AnnounceResponse {}

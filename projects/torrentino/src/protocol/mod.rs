@@ -1,3 +1,3 @@
 pub mod entities;
-pub mod net;
 mod messaging;
+pub mod net;

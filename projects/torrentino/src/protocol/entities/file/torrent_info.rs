@@ -1,6 +1,6 @@
-use serde_derive::Deserialize;
 use crate::protocol::entities::TorrentFile;
 use serde_bytes::ByteBuf;
+use serde_derive::Deserialize;
 
 #[derive(Debug, Deserialize)]
 pub struct TorrentInfo {

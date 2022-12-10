@@ -1,12 +1,11 @@
 use crate::protocol::entities::file::torrent_node::TorrentNode;
 use crate::protocol::entities::TorrentInfo;
 
+use serde_bencode::de;
 use serde_derive::Deserialize;
 use std::convert::TryFrom;
-use serde_bencode::de;
 use std::fs::File;
 use std::io::Read;
-
 
 #[derive(Debug, Deserialize)]
 pub struct Torrent {
@@ -36,8 +35,7 @@ impl TryFrom<String> for Torrent {
     type Error = String;
 
     fn try_from(path: String) -> Result<Self, Self::Error> {
-        let mut file = File::open(path)
-            .map_err(|e| format!("Unable open file due error: {e}"))?;
+        let mut file = File::open(path).map_err(|e| format!("Unable open file due error: {e}"))?;
 
         let mut buffer = Vec::new();
         file.read_to_end(&mut buffer)

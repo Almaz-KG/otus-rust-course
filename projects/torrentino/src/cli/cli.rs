@@ -1,6 +1,8 @@
-use crate::cli::Arguments;
 use crate::protocol::entities::Torrent;
+use crate::protocol::net::UdpClient;
+use crate::cli::Arguments;
 use std::convert::TryFrom;
+use url::{Url, ParseError};
 
 pub struct Cli {
     args: Arguments,
@@ -33,13 +35,29 @@ impl Cli {
             .map_err(|e| format!("Unable parse torrent file {}", e))?)
     }
 
+    fn parse_announce(address: &str) -> Result<(String, u16), String> {
+        let result = Url::parse(address)
+            .map_err(|e| format!("{}", e))?;
+
+        let host = result.host().expect("Unable extract host from announce address");
+        let port = result.port().expect("Unable extract port from announce address");
+
+        Ok((host.to_string(), port))
+    }
+
     pub fn process(&self) -> Result<(), String> {
-        println!("Processing with {:?}", self.args);
         self.check_file_existence()?;
 
         let torrent = self.parse_torrent_file()?;
 
-        println!("{:?}", torrent.info.name);
+        let (host, port) = Cli::parse_announce(&torrent.announce
+            .expect("No announce provided in torrent file"))
+            .expect("Unable extract host and port from announce address");
+
+        let mut udp_client = UdpClient::new(34254,host, port);
+        let peers_list = udp_client.get_peers_list()?;
+
+        println!("{:?}", peers_list);
 
         Ok(())
     }

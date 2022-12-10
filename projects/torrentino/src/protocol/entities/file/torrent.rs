@@ -1,4 +1,4 @@
-use crate::protocol::entities::torrent_node::TorrentNode;
+use crate::protocol::entities::file::torrent_node::TorrentNode;
 use crate::protocol::entities::TorrentInfo;
 
 use serde_derive::Deserialize;

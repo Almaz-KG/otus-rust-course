@@ -1,12 +1,13 @@
-pub use torrent::Torrent;
-pub use torrent_file::TorrentFile;
-pub use torrent_info::TorrentInfo;
-pub use torrent_node::TorrentNode;
-pub use torrent_tracker::TorrentTracker;
+mod file;
+mod messaging;
 
-mod torrent;
-mod torrent_file;
-mod torrent_info;
-mod torrent_node;
-mod torrent_tracker;
+pub use file::torrent::Torrent;
+pub use file::torrent_info::TorrentInfo;
+pub use file::torrent_node::TorrentNode;
+pub use file::torrent_tracker::TorrentTracker;
+pub use file::torrent_file::TorrentFile;
 
+pub use messaging::ConnectionRequest;
+pub use messaging::AnnounceResponse;
+
+pub type ConnectionType = String;

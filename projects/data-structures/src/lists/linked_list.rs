@@ -1,11 +1,11 @@
 use std::rc::Rc;
 use std::cell::RefCell;
+use std::fmt::{Display, Formatter, Result as DisplayResult};
 
 type NodeOption<T> = Option<Rc<RefCell<Node<T>>>>;
 
 #[derive(Debug, Clone, PartialOrd, PartialEq)]
-struct Node<T>
-    where T: Clone {
+struct Node<T> {
     value: T,
     next: NodeOption<T>,
 }
@@ -17,7 +17,7 @@ impl<T: Clone> Node<T> {
 }
 
 #[derive(Debug, Default)]
-pub struct LinkedList<T: Clone> {
+pub struct LinkedList<T> {
     head: NodeOption<T>,
     tail: NodeOption<T>,
     size: usize,
@@ -62,6 +62,23 @@ impl<T: Clone> LinkedList<T> {
     }
 }
 
+impl<T: Display> Display for LinkedList<T> {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> DisplayResult {
+        fn print<T: Display>(node: &Option<&Rc<RefCell<Node<T>>>>, formatter: &mut Formatter<'_>) {
+            node.map(|rc| {
+                let value = rc.borrow();
+                formatter.write_str(&format!("{}->", &value.value))
+                    .expect("Unable write to formatter");
+                print(&value.next.as_ref(), formatter);
+            });
+        }
+
+        print(&self.head.as_ref(), formatter);
+        formatter.write_str("Nill").expect("Unable write to formatter");
+
+        Ok(())
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -150,6 +167,34 @@ mod tests {
 
         assert!(list.head.is_none());
         assert!(list.tail.is_none());
+        assert_eq!(list.head, list.tail);
+    }
+
+    #[test]
+    fn pop_element_from_n_elements_list(){
+        let mut list: LinkedList<i32> = LinkedList::default();
+
+        for i in 0..10 {
+            list.append(i as i32);
+        }
+
+        assert!(list.head.is_some());
+        assert!(list.tail.is_some());
+        assert_eq!(list.size, 10);
+
+        for i in 0..10 {
+            assert_eq!(list.size, (10 - i) as usize);
+            let pop_result = list.pop();
+            assert!(pop_result.is_some());
+            assert_eq!(pop_result.unwrap(), i);
+            assert_eq!(list.size, (10 - i - 1) as usize);
+        }
+
+        let pop_result = list.pop();
+        assert!(pop_result.is_none());
+        assert_eq!(list.size, 0);
+
+        assert!(list.head.is_none());
         assert_eq!(list.head, list.tail);
     }
 }

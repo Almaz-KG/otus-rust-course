@@ -38,24 +38,25 @@ impl UdpClient {
     }
 
     fn init_socket(&mut self) {
-        let host_address: SocketAddr = format!("127.0.0.1:{}", self.local_port)
+        let remote_address: SocketAddr = format!("{}:{}", self.remote_host, self.remote_port)
             .to_socket_addrs()
             .unwrap()
             .as_slice()[0];
 
         // We'll bind our UDP socket to a local IP/port, but for now we basically let the OS
         // pick both of those.
-        let bind_addr = if host_address.ip().is_ipv4() {
+        let bind_addr = if remote_address.ip().is_ipv4() {
             "0.0.0.0:0"
         } else {
             "[::]:0"
         };
 
-        let socket = UdpSocket::bind(&bind_addr).expect("Unable open UDP socket");
+        let socket = UdpSocket::bind(&bind_addr)
+            .expect("Unable open UDP socket");
 
-        let remote_address = format!("{}:{}", self.remote_host, self.remote_port);
-        println!("{}", remote_address);
-        socket.connect(remote_address);
+        println!("Remote host ip address: {}", remote_address.ip());
+        socket.connect(remote_address).expect("Unable connect to {}");
+
         socket.set_read_timeout(Some(Duration::from_secs(5)));
 
         self.socket = Some(socket);
@@ -80,7 +81,7 @@ impl UdpClient {
         println!("{}", send);
 
         let mut buffer = [0u8; 16];
-        socket
+        let _ = socket
             .recv_from(&mut buffer)
             .expect("Could not read into buffer");
 

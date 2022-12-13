@@ -4,7 +4,7 @@ use std::fmt::{Display, Formatter, Result as FmtResult};
 /// An interface for any object, which want to declare that it can measure the surrounding
 /// environment. Current implementation is relativelly simple and dummy, but in the future
 /// implementations it might be changed.
-pub trait CanMeasure<T> {
+pub trait Measure<T> {
     /// Make a measure. It's simple function for making measure of the env. It's a blocking
     /// version, in the future updates it might be changed to the `async` version.
     fn measure(&self) -> Result<Option<T>, MeasureError>;

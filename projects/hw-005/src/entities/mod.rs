@@ -21,4 +21,4 @@ pub use reportable::{ReportError, Reportable};
 /// is relatively simple interface object, which will allow to store group of devices in single
 /// container. All details of measurement should be hidden in the exact device implementation.
 mod measure;
-pub use measure::{CanMeasure, MeasureError};
+pub use measure::{Measure, MeasureError};

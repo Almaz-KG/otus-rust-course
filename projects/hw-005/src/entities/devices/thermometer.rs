@@ -1,5 +1,5 @@
 use crate::entities::reportable::{ReportError, Reportable};
-use crate::entities::{CanMeasure, MeasureError};
+use crate::entities::{Measure, MeasureError};
 use std::fmt::{Display, Formatter, Result as FmtResult};
 
 /// A super short and stupid wrapper around the Thermometer entity. In theory and the future
@@ -37,7 +37,7 @@ impl Display for Thermometer {
     }
 }
 
-impl CanMeasure<f32> for Thermometer {
+impl Measure<f32> for Thermometer {
     /// A fake implementation of the `measure` function for the given thermometer instance. The
     /// current implementation gives a random number from [0.. 1.0). I don't expect that the logic
     /// behind this method will be changed in scope of this project at all. So, please consider

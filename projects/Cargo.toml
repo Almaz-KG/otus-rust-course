@@ -6,4 +6,5 @@ members = [
     "hw-003",
     "hw-004",
     "hw-004-enum-based",
+    "hw-005",
 ]

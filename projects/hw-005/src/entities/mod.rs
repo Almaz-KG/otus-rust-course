@@ -16,7 +16,7 @@ pub mod devices;
 mod reportable;
 pub use reportable::{ReportError, Reportable};
 
-/// A [measure] submodule holds a public trait [CanMeasure](measure/CanMeasure) which is an
+/// A [measure] submodule holds a public trait [Measure](measure/Measure) which is an
 /// interface for any object which can make some measurement of the surrounding environment. This
 /// is relatively simple interface object, which will allow to store group of devices in single
 /// container. All details of measurement should be hidden in the exact device implementation.

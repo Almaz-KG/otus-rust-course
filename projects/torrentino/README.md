@@ -16,7 +16,7 @@ might not be implemented) depending on remaining time till the end of the course
 1. [ ] [optional] desktop application for Macos
 1. [ ] [optional] web app (with backend and front-end)
 
-### Must to have feature list ![progress](https://progress-bar.dev/0/?scale=3&width=120&color=babaca&suffix=%20of%203)
+### Must to have feature list ![progress](https://progress-bar.dev/0/?scale=4&width=120&color=babaca&suffix=%20of%204)
 
 As the header states, the following list contains the major features, without them the result of the
 project will be useless. These features can be considered as first priority tasks.
@@ -26,7 +26,7 @@ project will be useless. These features can be considered as first priority task
 1. [ ] interact with torrent-server
 1. [ ] download and save file from torrent-peers
 
-### Nice to have feature list ![progress](https://progress-bar.dev/0/?scale=6&width=120&color=babaca&suffix=%20of%206)
+### Nice to have feature list ![progress](https://progress-bar.dev/0/?scale=5&width=120&color=babaca&suffix=%20of%205)
 
 1. [ ] parallel downloads with progress bar
 1. [ ] download only chosen part of torrent

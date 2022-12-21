@@ -38,35 +38,12 @@ impl Cli {
         Ok(Torrent::try_from(file_path).map_err(|e| format!("Unable parse torrent file {}", e))?)
     }
 
-    fn parse_announce(address: &str) -> Result<(String, u16), String> {
-        let result = Url::parse(address).map_err(|e| format!("{}", e))?;
-
-        let host = result
-            .host()
-            .expect("Unable extract host from announce address");
-        let port = result
-            .port()
-            .expect("Unable extract port from announce address");
-
-        Ok((host.to_string(), port))
-    }
-
     pub fn process(&self) -> Result<(), String> {
         self.check_file_existence()?;
 
         let torrent = self.parse_torrent_file()?;
-
-        println!("{}", torrent);
-
-        let (host, port) = Cli::parse_announce(
-            &torrent
-                .announce
-                .expect("No announce provided in torrent file"),
-        )
-        .expect("Unable extract host and port from announce address");
-
-        let mut udp_client = UdpClient::new(34254, host, port);
-        let peers_list = udp_client.get_peers_list()?;
+        let client = UdpClient::new(torrent);
+        let peers_list = client.get_peers_list()?;
 
         println!("{:?}", peers_list);
 

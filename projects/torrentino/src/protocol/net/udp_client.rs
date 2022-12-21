@@ -1,31 +1,39 @@
-use crate::protocol::entities::AnnounceResponse;
-use crate::protocol::entities::ConnectionRequest;
-use crate::protocol::entities::ConnectionType;
+use crate::protocol::entities::{AnnounceResponse, Torrent, TrackerUrl, TrackerProtocol, ConnectionRequest, ConnectionResponse};
 use std::io;
 use std::net::{SocketAddr, ToSocketAddrs, UdpSocket};
 use std::time::Duration;
+use url::Url;
+
+const DEFAULT_PORT: u16 = 80;
+
+type ConnectionId = i64;
 
 #[derive(Debug)]
 pub struct UdpClient {
-    local_port: u16,
-
-    remote_host: String,
-    remote_port: u16,
-
-    socket: Option<UdpSocket>,
+    torrent: Torrent
 }
 
 impl UdpClient {
-    pub fn new(local_port: u16, remote_host: String, remote_port: u16) -> Self {
-        Self {
-            local_port,
-            remote_host,
-            remote_port,
-            socket: None,
-        }
+    pub fn new(torrent: Torrent) -> Self {
+        Self { torrent }
     }
 
-    pub fn get_peers_list(&mut self) -> Result<Vec<String>, String> {
+    fn parse_tracker_url(address: &str) -> Result<TrackerUrl, String> {
+        let result = Url::parse(address).map_err(|e| format!("{}", e))?;
+        let host = result
+            .host()
+            .expect("Unable extract host from announce address");
+        let port = result
+            .port()
+            .unwrap_or(DEFAULT_PORT);
+
+        let protocol = TrackerProtocol::from_url(address)
+            .unwrap_or(TrackerProtocol::UDP);
+
+        Ok(TrackerUrl::new(protocol, host.to_string(), port))
+    }
+
+    pub fn get_peers_list(&self) -> Result<Vec<String>, String> {
         let connection_id = self.establish_connection()?;
         let peers = self.make_announce_request(&connection_id)?;
 
@@ -37,10 +45,17 @@ impl UdpClient {
         todo!()
     }
 
-    fn init_socket(&mut self) {
-        let remote_address: SocketAddr = format!("{}:{}", self.remote_host, self.remote_port)
+    fn ping_pong(&self, request_content: &Vec<u8>, tracker: &str) -> Result<ConnectionId, String> {
+        let tracker_url = UdpClient::parse_tracker_url(&tracker)?;
+
+        if tracker_url.protocol != TrackerProtocol::UDP {
+            // Skip non UDP trackers
+            return Err(format!("Unsupported tracker protocol: {}", tracker_url.protocol));
+        }
+
+        let remote_address: SocketAddr = format!("{}:{}", tracker_url.url, tracker_url.port)
             .to_socket_addrs()
-            .unwrap()
+            .expect("Unable create remote host address")
             .as_slice()[0];
 
         // We'll bind our UDP socket to a local IP/port, but for now we basically let the OS
@@ -51,51 +66,38 @@ impl UdpClient {
             "[::]:0"
         };
 
-        let socket = UdpSocket::bind(&bind_addr)
-            .expect("Unable open UDP socket");
-
-        println!("Remote host ip address: {}", remote_address.ip());
-        socket.connect(remote_address).expect("Unable connect to {}");
+        let socket = UdpSocket::bind(&bind_addr).expect("Unable open UDP socket");
 
         socket.set_read_timeout(Some(Duration::from_secs(5)));
 
-        self.socket = Some(socket);
+        let _ = socket.send_to(&request_content, remote_address)
+            .map_err(|e| format!("{}", e))?;
+        let mut buffer = [0u8; 16];
+        let (_, _) = socket.recv_from(&mut buffer).map_err(|e| format!("{}", e))?;
+        let response: ConnectionResponse = bincode::deserialize(&buffer)
+            .map_err(|e| format!("{}", e))?;
+
+        Ok(response.connection_id)
     }
 
-    fn establish_connection(&mut self) -> Result<ConnectionType, String> {
-        if self.socket.is_none() {
-            self.init_socket();
+    fn establish_connection(&self) -> Result<ConnectionId, String> {
+        let request_content = bincode::serialize(&ConnectionRequest::new()).unwrap();
+
+        for tracker in self.torrent.trackers_list() {
+            println!("Trying for {}", tracker);
+            let result = self.ping_pong(&request_content, &tracker);
+
+            if result.is_ok() {
+                println!("Connection established");
+                return result
+            }
         }
 
-        let socket = self.socket.as_ref().unwrap();
-
-        let cr = ConnectionRequest::new();
-        let cr_code = bincode::serialize(&cr).unwrap();
-
-        println!("{:?}", &cr_code);
-
-        let send = match socket.send(&cr_code) {
-            io::Result::Err(e) => Err(format!("{}", e)),
-            io::Result::Ok(size) => Ok(size),
-        }?;
-        println!("{}", send);
-
-        let mut buffer = [0u8; 16];
-        let _ = socket
-            .recv_from(&mut buffer)
-            .expect("Could not read into buffer");
-
-        // let (number_of_bytes, src_addr) = socket
-        //     .recv_from(&mut buff)
-        //     .expect("no data received");
-        //
-        // println!("{:?}", number_of_bytes);
-        println!("{:?}", buffer);
-
-        todo!()
+        Err("Unable connect to any torrent trackers".to_string())
     }
 
-    fn make_announce_request(&self, connection_id: &str) -> Result<AnnounceResponse, String> {
+    fn make_announce_request(&self, connection_id: &ConnectionId) -> Result<AnnounceResponse, String> {
+        println!("Connection ID: {}", connection_id);
         todo!()
     }
 }

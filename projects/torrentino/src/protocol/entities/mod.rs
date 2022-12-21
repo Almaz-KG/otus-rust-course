@@ -7,7 +7,5 @@ pub use file::torrent_info::TorrentInfo;
 pub use file::torrent_node::TorrentNode;
 pub use file::torrent_tracker::TorrentTracker;
 
-pub use messaging::AnnounceResponse;
-pub use messaging::ConnectionRequest;
+pub use messaging::*;
 
-pub type ConnectionType = String;

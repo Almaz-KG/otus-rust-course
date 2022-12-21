@@ -33,6 +33,25 @@ pub struct Torrent {
     pub httpseeds: Option<Vec<String>>,
 }
 
+impl Torrent {
+
+    pub fn trackers_list(&self) -> Vec<String> {
+        let mut result: Vec<String> = vec![];
+
+        if let Some(tracker) = self.announce.clone() {
+            result.push(tracker);
+        }
+
+        if let Some(trackers) = self.announce_list.clone() {
+            for tracker in trackers.iter(){
+                result.push(tracker[0].clone())
+            }
+        }
+        result
+    }
+
+}
+
 impl TryFrom<String> for Torrent {
     type Error = String;
 

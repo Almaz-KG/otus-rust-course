@@ -4,10 +4,12 @@ use crate::protocol::entities::TorrentInfo;
 use chrono::{DateTime, NaiveDateTime, Utc};
 use serde_bencode::de;
 use serde_derive::Deserialize;
+use sha1::{Digest, Sha1};
 use std::convert::TryFrom;
 use std::fmt::{Display, Formatter, Result as FmtResult};
 use std::fs::File;
 use std::io::Read;
+use std::path::PathBuf;
 
 #[derive(Debug, Deserialize)]
 pub struct Torrent {
@@ -47,6 +49,40 @@ impl Torrent {
             }
         }
         result
+    }
+
+    pub fn info_hash(&self) -> Result<[u8; 20], String> {
+        let info = serde_bencode::to_bytes(&self.info)
+            .map_err(|e| format!("Unable to serialize torrent info {:?}", e))?;
+        let digest = Sha1::digest(&info);
+        let mut info_hash = [0u8; 20];
+        info_hash.copy_from_slice(&digest);
+        Ok(info_hash)
+    }
+
+    pub fn total_size(&self) -> i64 {
+        if let Some(ref files) = self.info.files {
+            files.iter().map(|f| f.length).sum()
+        } else {
+            -1
+        }
+    }
+}
+
+impl TryFrom<PathBuf> for Torrent {
+    type Error = String;
+
+    fn try_from(file: PathBuf) -> Result<Self, Self::Error> {
+        let mut file = File::open(file).map_err(|e| format!("Unable open file due error: {e}"))?;
+
+        let mut buffer = Vec::new();
+        file.read_to_end(&mut buffer)
+            .map_err(|e| format!("{}", e))?;
+
+        let torrent = de::from_bytes::<Torrent>(&buffer)
+            .map_err(|e| format!("Unable deserialize the bencode file: {e}"))?;
+
+        Ok(torrent)
     }
 }
 

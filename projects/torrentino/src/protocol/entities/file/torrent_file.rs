@@ -1,6 +1,6 @@
-use serde_derive::Deserialize;
+use serde_derive::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TorrentFile {
     pub path: Vec<String>,
     pub length: i64,

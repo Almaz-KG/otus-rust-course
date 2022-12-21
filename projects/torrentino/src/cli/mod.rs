@@ -2,8 +2,8 @@ mod cli_args;
 
 pub use cli_args::Arguments;
 
+use crate::engine::TorrentEngine;
 use crate::protocol::entities::Torrent;
-use crate::protocol::net::UdpClient;
 use std::convert::TryFrom;
 
 pub struct Cli {
@@ -47,10 +47,9 @@ impl Cli {
         self.check_file_existence()?;
 
         let torrent = self.parse_torrent_file()?;
-        let client = UdpClient::new(torrent);
-        let peers_list = client.get_peers_list()?;
+        let mut torrent_engine = TorrentEngine::start();
 
-        println!("{:?}", peers_list);
+        torrent_engine.add_new_torrent(torrent);
 
         Ok(())
     }

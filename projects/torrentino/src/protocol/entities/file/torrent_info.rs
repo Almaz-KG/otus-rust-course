@@ -1,8 +1,8 @@
 use crate::protocol::entities::TorrentFile;
 use serde_bytes::ByteBuf;
-use serde_derive::Deserialize;
+use serde_derive::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TorrentInfo {
     pub name: String,
     pub pieces: ByteBuf,

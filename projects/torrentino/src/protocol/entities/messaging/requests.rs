@@ -1,9 +1,12 @@
 use rand::random;
 use serde_derive::{Deserialize, Serialize};
+use std::convert::TryFrom;
 use std::fmt::{Display, Formatter, Result as FmtResult};
+use url::Url;
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Hash)]
 pub enum TrackerProtocol {
+    HTTP,
     TCP,
     UDP,
     WSS,
@@ -21,6 +24,15 @@ impl TrackerProtocol {
             None
         }
     }
+
+    pub fn default_port(&self) -> u16 {
+        match self {
+            TrackerProtocol::UDP => 6891,
+            TrackerProtocol::TCP => 8080,
+            TrackerProtocol::HTTP => 80,
+            TrackerProtocol::WSS => 80,
+        }
+    }
 }
 
 impl Display for TrackerProtocol {
@@ -29,6 +41,7 @@ impl Display for TrackerProtocol {
             Self::UDP => formatter.write_str("udp"),
             Self::TCP => formatter.write_str("tcp"),
             Self::WSS => formatter.write_str("wss"),
+            Self::HTTP => formatter.write_str("http"),
         }
     }
 }
@@ -53,6 +66,23 @@ impl TrackerUrl {
             url,
             port,
         }
+    }
+}
+
+impl TryFrom<&str> for TrackerUrl {
+    type Error = String;
+
+    fn try_from(address: &str) -> Result<Self, Self::Error> {
+        let result = Url::parse(address).map_err(|e| format!("{}", e))?;
+        let host = result
+            .host()
+            .expect("Unable extract host from announce address");
+
+        let protocol = TrackerProtocol::from_url(address).unwrap_or(TrackerProtocol::UDP);
+
+        let port = result.port().unwrap_or_else(|| protocol.default_port());
+
+        Ok(TrackerUrl::new(protocol, host.to_string(), port))
     }
 }
 

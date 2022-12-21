@@ -779,14 +779,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "udp-client"
-version = "0.0.1"
-
-[[package]]
-name = "udp-server"
-version = "0.0.1"
-
-[[package]]
 name = "unicode-bidi"
 version = "0.3.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"

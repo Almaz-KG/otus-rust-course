@@ -8,7 +8,6 @@ use clap::Parser;
 use std::error::Error;
 use std::net::{SocketAddr, ToSocketAddrs};
 use std::thread;
-use tokio::net::UdpSocket;
 use torrentino::protocol::entities::ConnectionRequest;
 
 fn main() -> Result<(), String> {

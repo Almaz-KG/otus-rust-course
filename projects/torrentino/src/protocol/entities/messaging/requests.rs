@@ -20,6 +20,8 @@ impl TrackerProtocol {
             Some(TrackerProtocol::WSS)
         } else if url.starts_with("tcp") {
             Some(TrackerProtocol::TCP)
+        } else if url.starts_with("http") {
+            Some(TrackerProtocol::HTTP)
         } else {
             None
         }
@@ -78,7 +80,8 @@ impl TryFrom<&str> for TrackerUrl {
             .host()
             .expect("Unable extract host from announce address");
 
-        let protocol = TrackerProtocol::from_url(address).unwrap_or(TrackerProtocol::UDP);
+        let protocol = TrackerProtocol::from_url(address)
+            .expect("Unable get tracker communication protocol");
 
         let port = result.port().unwrap_or_else(|| protocol.default_port());
 
@@ -88,15 +91,15 @@ impl TryFrom<&str> for TrackerUrl {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ConnectionRequest {
-    protocol_id: i64,
-    action: i32,
-    transaction_id: i32,
+    protocol_id: u64,
+    action: u32,
+    transaction_id: u32,
 }
 
 impl Default for ConnectionRequest {
     fn default() -> Self {
         Self {
-            protocol_id: i64::to_be(0x41727101980),
+            protocol_id: u64::to_be(0x41727101980),
             action: 0,
             transaction_id: random(),
         }
@@ -111,7 +114,7 @@ impl Display for ConnectionRequest {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ConnectionResponse {
-    pub action: i32,
-    pub transaction_id: i32,
-    pub connection_id: i64,
+    pub action: u32,
+    pub transaction_id: u32,
+    pub connection_id: u64,
 }

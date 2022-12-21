@@ -60,11 +60,11 @@ impl Torrent {
         Ok(info_hash)
     }
 
-    pub fn total_size(&self) -> i64 {
+    pub fn total_size(&self) -> u64 {
         if let Some(ref files) = self.info.files {
             files.iter().map(|f| f.length).sum()
         } else {
-            -1
+            0
         }
     }
 }

@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use crate::protocol::entities::{Torrent, TrackerProtocol, TrackerUrl};
-use crate::protocol::net::{NetworkClient, UdpClient};
+use crate::protocol::net::{NetworkClient, UdpClient, HttpClient, Peer};
 use std::collections::HashMap;
 
 pub struct TorrentEngine {
@@ -15,6 +15,7 @@ impl TorrentEngine {
         let mut network_clients: HashMap<TrackerProtocol, Box<dyn NetworkClient>> = HashMap::new();
 
         network_clients.insert(TrackerProtocol::UDP, Box::new(UdpClient::default()));
+        network_clients.insert(TrackerProtocol::HTTP, Box::new(HttpClient::default()));
 
         TorrentEngine {
             is_active: true,
@@ -23,7 +24,7 @@ impl TorrentEngine {
         }
     }
 
-    fn get_peers_list(&self, torrent: &Torrent) -> Result<Vec<String>, String> {
+    fn get_peers_list(&self, torrent: &Torrent) -> Result<Vec<Peer>, String> {
         for tracker in torrent.trackers_list() {
             println!("Trying for {}", tracker);
             let tracker_url = TrackerUrl::try_from(tracker.as_str());
@@ -41,11 +42,12 @@ impl TorrentEngine {
             }
 
             let client = client.unwrap();
-            let peers_list = client
-                .get_peers_list(torrent, &tracker_url)
-                .expect("Unable get peers list");
 
-            println!("Peers list: {:?}", peers_list)
+            if let Ok(peers_list) = client.get_peers_list(torrent, &tracker_url) {
+                println!("# of peers {}", peers_list.len());
+                println!("Peers list: {:?}", peers_list);
+                return Ok(peers_list)
+            }
         }
 
         Ok(vec![])

@@ -1,10 +1,10 @@
+mod http_client;
 mod network_client;
 mod udp_client;
-mod http_client;
 
+pub use http_client::*;
 pub use network_client::*;
 pub use udp_client::*;
-pub use http_client::*;
 
 #[derive(Debug)]
 pub struct Peer {

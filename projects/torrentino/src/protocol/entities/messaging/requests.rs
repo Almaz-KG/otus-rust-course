@@ -80,8 +80,8 @@ impl TryFrom<&str> for TrackerUrl {
             .host()
             .expect("Unable extract host from announce address");
 
-        let protocol = TrackerProtocol::from_url(address)
-            .expect("Unable get tracker communication protocol");
+        let protocol =
+            TrackerProtocol::from_url(address).expect("Unable get tracker communication protocol");
 
         let port = result.port().unwrap_or_else(|| protocol.default_port());
 

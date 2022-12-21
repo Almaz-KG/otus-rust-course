@@ -4,8 +4,7 @@ use crate::protocol::net::{NetworkClient, Peer};
 #[derive(Debug, Default)]
 pub struct HttpClient {}
 
-impl HttpClient {
-}
+impl HttpClient {}
 
 impl NetworkClient for HttpClient {
     fn get_peers_list(

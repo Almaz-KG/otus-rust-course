@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use crate::protocol::entities::{Torrent, TrackerProtocol, TrackerUrl};
-use crate::protocol::net::{NetworkClient, UdpClient, HttpClient, Peer};
+use crate::protocol::net::{HttpClient, NetworkClient, Peer, UdpClient};
 use std::collections::HashMap;
 
 pub struct TorrentEngine {
@@ -46,7 +46,7 @@ impl TorrentEngine {
             if let Ok(peers_list) = client.get_peers_list(torrent, &tracker_url) {
                 println!("# of peers {}", peers_list.len());
                 println!("Peers list: {:?}", peers_list);
-                return Ok(peers_list)
+                return Ok(peers_list);
             }
         }
 

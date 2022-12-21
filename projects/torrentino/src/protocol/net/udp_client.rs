@@ -10,8 +10,11 @@ const DEFAULT_BUFFER_SIZE: usize = 32767;
 pub struct UdpClient {}
 
 impl UdpClient {
-    fn make_request(&self, request_content: &[u8], tracker: &TrackerUrl)
-        -> Result<Vec<u8>, String> {
+    fn make_request(
+        &self,
+        request_content: &[u8],
+        tracker: &TrackerUrl,
+    ) -> Result<Vec<u8>, String> {
         if tracker.protocol != TrackerProtocol::UDP {
             // Skip non UDP trackers
             return Err(format!(
@@ -60,8 +63,8 @@ impl NetworkClient for UdpClient {
     ) -> Result<Vec<Peer>, String> {
         let request_content = bincode::serialize(&ConnectionRequest::default()).unwrap();
         let response_raw: Vec<u8> = self.make_request(&request_content, tracker_url)?;
-        let connection_response: ConnectionResponse = bincode::deserialize(&response_raw)
-            .map_err(|e| format!("{}", e))?;
+        let connection_response: ConnectionResponse =
+            bincode::deserialize(&response_raw).map_err(|e| format!("{}", e))?;
 
         let connection_id = connection_response.connection_id;
         println!("Connection id: {}", connection_id);

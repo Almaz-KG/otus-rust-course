@@ -3,7 +3,10 @@ use torrentino::cli::{Arguments, Cli};
 #[test]
 fn download_torrent_file() {
     let args = Arguments {
-        file: "resources/test_file_one_tracker.torrent".to_string().parse().unwrap(),
+        file: "resources/test_file_one_tracker.torrent"
+            .to_string()
+            .parse()
+            .unwrap(),
         threads: 1,
         select: None,
         exclude: None,

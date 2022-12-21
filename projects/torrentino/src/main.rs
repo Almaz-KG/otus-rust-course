@@ -3,13 +3,13 @@
 
 use torrentino::cli::{Arguments, Cli};
 
+use bincode::Options;
 use clap::Parser;
+use std::error::Error;
 use std::net::{SocketAddr, ToSocketAddrs};
 use std::thread;
-use std::error::Error;
-use torrentino::protocol::entities::ConnectionRequest;
 use tokio::net::UdpSocket;
-use bincode::Options;
+use torrentino::protocol::entities::ConnectionRequest;
 
 fn main() -> Result<(), String> {
     let arguments = Arguments::parse();

@@ -1,5 +1,6 @@
-use crate::protocol::entities::{AnnounceResponse, Torrent, TrackerUrl, TrackerProtocol, ConnectionRequest, ConnectionResponse};
-use std::io;
+use crate::protocol::entities::{
+    AnnounceResponse, ConnectionRequest, ConnectionResponse, Torrent, TrackerProtocol, TrackerUrl,
+};
 use std::net::{SocketAddr, ToSocketAddrs, UdpSocket};
 use std::time::Duration;
 use url::Url;
@@ -10,7 +11,7 @@ type ConnectionId = i64;
 
 #[derive(Debug)]
 pub struct UdpClient {
-    torrent: Torrent
+    torrent: Torrent,
 }
 
 impl UdpClient {
@@ -23,19 +24,16 @@ impl UdpClient {
         let host = result
             .host()
             .expect("Unable extract host from announce address");
-        let port = result
-            .port()
-            .unwrap_or(DEFAULT_PORT);
+        let port = result.port().unwrap_or(DEFAULT_PORT);
 
-        let protocol = TrackerProtocol::from_url(address)
-            .unwrap_or(TrackerProtocol::UDP);
+        let protocol = TrackerProtocol::from_url(address).unwrap_or(TrackerProtocol::UDP);
 
         Ok(TrackerUrl::new(protocol, host.to_string(), port))
     }
 
     pub fn get_peers_list(&self) -> Result<Vec<String>, String> {
         let connection_id = self.establish_connection()?;
-        let peers = self.make_announce_request(&connection_id)?;
+        let _peers = self.make_announce_request(&connection_id)?;
 
         // Send a connect request
         // Get the connect response and extract the connection id
@@ -45,12 +43,15 @@ impl UdpClient {
         todo!()
     }
 
-    fn ping_pong(&self, request_content: &Vec<u8>, tracker: &str) -> Result<ConnectionId, String> {
-        let tracker_url = UdpClient::parse_tracker_url(&tracker)?;
+    fn ping_pong(&self, request_content: &[u8], tracker: &str) -> Result<ConnectionId, String> {
+        let tracker_url = UdpClient::parse_tracker_url(tracker)?;
 
         if tracker_url.protocol != TrackerProtocol::UDP {
             // Skip non UDP trackers
-            return Err(format!("Unsupported tracker protocol: {}", tracker_url.protocol));
+            return Err(format!(
+                "Unsupported tracker protocol: {}",
+                tracker_url.protocol
+            ));
         }
 
         let remote_address: SocketAddr = format!("{}:{}", tracker_url.url, tracker_url.port)
@@ -66,22 +67,27 @@ impl UdpClient {
             "[::]:0"
         };
 
-        let socket = UdpSocket::bind(&bind_addr).expect("Unable open UDP socket");
+        let socket = UdpSocket::bind(bind_addr).expect("Unable open UDP socket");
 
-        socket.set_read_timeout(Some(Duration::from_secs(5)));
+        socket
+            .set_read_timeout(Some(Duration::from_secs(5)))
+            .map_err(|e| format!("{}", e))?;
 
-        let _ = socket.send_to(&request_content, remote_address)
+        let _ = socket
+            .send_to(request_content, remote_address)
             .map_err(|e| format!("{}", e))?;
         let mut buffer = [0u8; 16];
-        let (_, _) = socket.recv_from(&mut buffer).map_err(|e| format!("{}", e))?;
-        let response: ConnectionResponse = bincode::deserialize(&buffer)
+        let (_, _) = socket
+            .recv_from(&mut buffer)
             .map_err(|e| format!("{}", e))?;
+        let response: ConnectionResponse =
+            bincode::deserialize(&buffer).map_err(|e| format!("{}", e))?;
 
         Ok(response.connection_id)
     }
 
     fn establish_connection(&self) -> Result<ConnectionId, String> {
-        let request_content = bincode::serialize(&ConnectionRequest::new()).unwrap();
+        let request_content = bincode::serialize(&ConnectionRequest::default()).unwrap();
 
         for tracker in self.torrent.trackers_list() {
             println!("Trying for {}", tracker);
@@ -89,14 +95,17 @@ impl UdpClient {
 
             if result.is_ok() {
                 println!("Connection established");
-                return result
+                return result;
             }
         }
 
         Err("Unable connect to any torrent trackers".to_string())
     }
 
-    fn make_announce_request(&self, connection_id: &ConnectionId) -> Result<AnnounceResponse, String> {
+    fn make_announce_request(
+        &self,
+        connection_id: &ConnectionId,
+    ) -> Result<AnnounceResponse, String> {
         println!("Connection ID: {}", connection_id);
         todo!()
     }

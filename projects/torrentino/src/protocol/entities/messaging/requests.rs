@@ -49,7 +49,9 @@ pub struct TrackerUrl {
 impl TrackerUrl {
     pub fn new(protocol: TrackerProtocol, url: String, port: u16) -> Self {
         Self {
-            protocol, url, port
+            protocol,
+            url,
+            port,
         }
     }
 }
@@ -61,8 +63,8 @@ pub struct ConnectionRequest {
     transaction_id: i32,
 }
 
-impl ConnectionRequest {
-    pub fn new() -> Self {
+impl Default for ConnectionRequest {
+    fn default() -> Self {
         Self {
             protocol_id: i64::to_be(0x41727101980),
             action: 0,

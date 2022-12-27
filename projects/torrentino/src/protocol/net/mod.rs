@@ -8,8 +8,8 @@ pub use udp_client::*;
 
 #[derive(Debug)]
 pub struct Peer {
-    ip: String,
-    port: u16,
+    pub ip: String,
+    pub port: u16,
 }
 
 impl Peer {

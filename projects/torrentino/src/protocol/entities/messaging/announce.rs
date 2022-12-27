@@ -3,7 +3,7 @@ use serde_derive::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AnnounceRequest {
-    connection_id: u64,
+    connection_id: i64,
     action: u32,
     transaction_id: u32,
     info_hash: [u8; 20],
@@ -20,7 +20,7 @@ pub struct AnnounceRequest {
 
 impl AnnounceRequest {
     pub fn announce(
-        connection_id: u64,
+        connection_id: i64,
         info_hash: [u8; 20],
         peer_id: [u8; 20],
         total_size: u64,

@@ -107,7 +107,7 @@ impl Display for Torrent {
     #[allow(unused_must_use)]
     fn fmt(&self, formatter: &mut Formatter<'_>) -> FmtResult {
         fn write_announce_list(announce_list: &Vec<Vec<String>>, formatter: &mut Formatter<'_>) {
-            if !announce_list.is_empty() {
+            if !announce_list.is_empty() && !announce_list[0].is_empty(){
                 write(
                     &format!("Tier 1: {}", &announce_list[0][0]),
                     "Announce List",

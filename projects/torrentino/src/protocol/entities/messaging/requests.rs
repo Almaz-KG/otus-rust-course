@@ -89,17 +89,17 @@ impl TryFrom<&str> for TrackerUrl {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ConnectionRequest {
-    protocol_id: u64,
-    action: u32,
-    transaction_id: u32,
+    pub protocol_id: i64,
+    pub action: i32,
+    pub transaction_id: i32,
 }
 
 impl Default for ConnectionRequest {
     fn default() -> Self {
         Self {
-            protocol_id: u64::to_be(0x41727101980),
+            protocol_id: i64::to_be(0x0417_2710_1980),
             action: 0,
             transaction_id: random(),
         }
@@ -114,7 +114,7 @@ impl Display for ConnectionRequest {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ConnectionResponse {
-    pub action: u32,
-    pub transaction_id: u32,
-    pub connection_id: u64,
+    pub action: i32,
+    pub transaction_id: i32,
+    pub connection_id: i64,
 }

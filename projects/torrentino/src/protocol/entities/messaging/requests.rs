@@ -112,7 +112,7 @@ impl Display for ConnectionRequest {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ConnectionResponse {
     pub action: i32,
     pub transaction_id: i32,

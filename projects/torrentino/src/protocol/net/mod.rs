@@ -2,6 +2,7 @@ mod http_client;
 mod network_client;
 mod udp_client;
 
+use std::fmt::{Display, Formatter};
 pub use http_client::*;
 pub use network_client::*;
 pub use udp_client::*;
@@ -10,6 +11,12 @@ pub use udp_client::*;
 pub struct Peer {
     pub ip: String,
     pub port: u16,
+}
+
+impl Display for Peer {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
+        formatter.write_str(&format!("{}:{}", self.ip, self.port))
+    }
 }
 
 impl Peer {
@@ -23,7 +30,7 @@ impl Peer {
             // Peer is u32 ip, u16 port = 6 bytes total
             let peer: Peer = Peer {
                 // big endian
-                ip: format!("{}.{}.{}.{}", chunk[3], chunk[2], chunk[1], chunk[0]),
+                ip: format!("{}.{}.{}.{}", chunk[0], chunk[1], chunk[2], chunk[3]),
                 port: u16::from_ne_bytes([chunk[5], chunk[4]]),
             };
             peers.push(peer);

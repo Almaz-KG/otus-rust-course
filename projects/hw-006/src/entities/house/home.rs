@@ -2,6 +2,7 @@ use crate::entities::devices::Device;
 use crate::entities::house::room::Room;
 use crate::entities::reportable::Reportable;
 use crate::entities::ReportError;
+use rand::{distributions::Alphanumeric, Rng};
 use serde_derive::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter, Result as FmtResult};
 
@@ -11,9 +12,10 @@ use std::fmt::{Display, Formatter, Result as FmtResult};
 /// reporting, and the only `name` field is used for short reporting.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Home {
-    name: String,
-    description: Option<String>,
-    rooms: Vec<Room>,
+    pub id: String,
+    pub name: String,
+    pub description: Option<String>,
+    pub rooms: Vec<Room>,
 }
 
 /// An implementation for [Home] struct
@@ -108,7 +110,7 @@ impl HomeBuilder {
     /// case, it should return a valid home instance
     ///
     /// ```
-    /// use hw_005::entities::house::HomeBuilder;
+    /// use hw_006::entities::house::HomeBuilder;
     /// let builder = HomeBuilder::default();
     /// let home = builder.build();
     ///
@@ -119,7 +121,16 @@ impl HomeBuilder {
             return Err("Please, provide house name".to_string());
         }
 
+        let id: String = rand::thread_rng()
+            .sample_iter(&Alphanumeric)
+            .take(5)
+            .map(char::from)
+            .collect();
+
+        let id = format!("home_{}", id);
+
         let h = Home {
+            id,
             name: self.name.unwrap(),
             description: self.description,
             rooms: self.rooms.unwrap_or_default(),

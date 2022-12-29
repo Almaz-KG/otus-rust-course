@@ -11,25 +11,6 @@ const SMART_HOME_FILE: &str = "smart-home.json";
 type SavedSmartHome = Option<Vec<Home>>;
 
 #[derive(Args, Debug)]
-pub struct Describe {
-    /// Description of the specific room
-    #[arg(short, long, value_name = "room_id")]
-    room: Option<String>,
-
-    /// Description of the specific apartment
-    #[arg(short, long, value_name = "home_id")]
-    apartment: Option<String>,
-
-    /// Description of the specific device
-    #[arg(short, long, value_name = "device_id")]
-    device: Option<String>,
-
-    /// Description of the all entities
-    #[arg(long, value_name = "all")]
-    all: Option<bool>,
-}
-
-#[derive(Args, Debug)]
 struct MakeMeasure {
     /// Device id of the device where the measure will be proceeded
     #[arg(short, long, value_name = "device_id")]
@@ -99,9 +80,34 @@ enum CreateEntity {
 }
 
 #[derive(Args, Debug)]
+struct RemoveEntity {
+    /// The id of the entity to be deleted
+    #[arg(short, long, value_name = "id")]
+    id: String
+}
+
+#[derive(Subcommand, Debug)]
+enum RemoveEntityCommand {
+    /// Remove a home
+    Home(RemoveEntity),
+
+    /// Remove a room
+    Room(RemoveEntity),
+
+    /// Remove a device
+    Device(RemoveEntity),
+}
+
+#[derive(Args, Debug)]
 struct EntityCreateCommandWrapper {
     #[command(subcommand)]
     command: CreateEntity,
+}
+
+#[derive(Args, Debug)]
+struct EntityRemoveCommandWrapper {
+    #[command(subcommand)]
+    command: RemoveEntityCommand,
 }
 
 #[derive(Subcommand, Debug)]
@@ -109,13 +115,15 @@ enum Command {
     /// Initialize the storage for working with current smart-home setup. It must be the first
     /// step in any further activities
     Init,
+
     /// Prints the status of the smart-home
     Status,
-    /// Prints the description of the specified entity. Requires additional parameters
-    Describe(Describe),
 
     /// Subcommand for creating a new entity
     New(EntityCreateCommandWrapper),
+
+    /// Subcommand for removing an entity
+    Remove(EntityRemoveCommandWrapper),
 
     /// Subcommand for interacting with home entity
     Home,
@@ -145,8 +153,8 @@ impl Cli {
         match args.command {
             Command::Init => Cli::init(),
             Command::Status => Cli::status(),
-            Command::Describe(_) => {}
             Command::New(command) => Cli::handle_new_command(command.command),
+            Command::Remove(command) => Cli::handle_remove_command(command.command),
             Command::Home => {}
             Command::Room => {}
             Command::Device => {}
@@ -197,6 +205,26 @@ impl Cli {
 
                     if option.is_some() {
                         return option;
+                    }
+                }
+                None
+            }),
+            Err(_) => None,
+        }
+    }
+
+    fn find_room_by_device_id(device_id: &str) -> Option<Room> {
+        match Cli::read_smart_home_status() {
+            Ok(smart_home) => smart_home.and_then(|homes| {
+                for home in homes {
+                    for room in home.rooms.into_iter() {
+                        let option = room.devices
+                            .iter()
+                            .find(|d| d.id() == device_id);
+
+                        if option.is_some() {
+                            return Some(room);
+                        }
                     }
                 }
                 None
@@ -285,8 +313,10 @@ impl Cli {
         if Cli::is_smart_home_repo_exists() {
             match Cli::read_smart_home_status() {
                 Ok(state) => match state {
-                    Some(home) => {
-                        println!("{:?}", home)
+                    Some(homes) => {
+                        for home in homes {
+                            println!("{}", home);
+                        }
                     }
                     None => {
                         println!(
@@ -315,7 +345,7 @@ impl Cli {
         }
         .expect("Unable create a home");
 
-        if let Err(msg) = Cli::update_state(Some(vec![home])) {
+        if let Err(msg) = Cli::update_home_state(home) {
             eprintln!("Unable to save changes: {}", msg)
         }
     }
@@ -335,7 +365,7 @@ impl Cli {
 
                 home.rooms.push(new_room);
 
-                if let Err(msg) = Cli::update_state(Some(vec![home])) {
+                if let Err(msg) = Cli::update_home_state(home) {
                     eprintln!("Unable to save changes: {}", msg)
                 }
             }
@@ -400,6 +430,99 @@ impl Cli {
             CreateEntity::Home(home) => Cli::handle_create_home_command(home),
             CreateEntity::Room(room) => Cli::handle_create_room_command(room),
             CreateEntity::Device(device) => Cli::handle_create_device_command(device),
+        }
+    }
+
+    fn remove_home_by_id(id: &str){
+        let current_state = Cli::read_smart_home_status();
+
+        match current_state {
+            Ok(state) => {
+                if let Some(homes) = state {
+                    let new_state: Vec<Home> = homes
+                        .into_iter()
+                        .filter(|h| h.id != id)
+                        .collect();
+
+                    if let Err(msg) = Cli::update_state(Some(new_state)) {
+                        eprintln!("Unable to save changes: {}", msg)
+                    }
+                }
+            }
+            Err(msg) => {
+                eprintln!("Unable remove home: {}", msg)
+            }
+        }
+    }
+
+    fn remove_room_by_id(id: &str){
+        let current_state = Cli::read_smart_home_status();
+
+        match current_state {
+            Ok(state) => {
+                if let Some(homes) = state {
+                    if let Some(mut home) = Cli::find_home_by_room_id(id) {
+                        let rooms: Vec<Room> = home.rooms
+                            .into_iter()
+                            .filter(|r| r.id != id)
+                            .collect();
+
+                        home.rooms = rooms;
+
+                        let mut new_state: Vec<Home> = homes
+                            .into_iter()
+                            .filter(|h| h.id != home.id)
+                            .collect();
+
+                        new_state.push(home);
+
+                        if let Err(msg) = Cli::update_state(Some(new_state)) {
+                            eprintln!("Unable to save changes: {}", msg)
+                        }
+                    }
+                }
+            }
+            Err(msg) => {
+                eprintln!("Unable remove home: {}", msg)
+            }
+        }
+
+    }
+
+    fn remove_device_by_id(id: &str){
+        if let Some(mut room) = Cli::find_room_by_device_id(id) {
+            let new_devices = room
+                .devices
+                .into_iter()
+                .filter(|d| d.id() != id)
+                .collect();
+
+            room.devices = new_devices;
+            if let Some(mut home) = Cli::find_home_by_room_id(&room.id) {
+                let mut new_rooms: Vec<Room> = home.rooms.iter()
+                    .filter(|r| r.id != room.id)
+                    .cloned()
+                    .collect();
+
+                new_rooms.push(room);
+                home.rooms = new_rooms;
+
+                if let Err(msg) = Cli::update_home_state(home) {
+                    eprintln!("Unable to save changes: {}", msg)
+                }
+            } else {
+                eprintln!("Unable find associated home for room: {}", room.id)
+            }
+        } else {
+            eprintln!("Unable find associated room for device: {}", id)
+        }
+    }
+
+    fn handle_remove_command(command: RemoveEntityCommand) {
+        match command {
+            RemoveEntityCommand::Home(home) => Cli::remove_home_by_id(&home.id),
+            RemoveEntityCommand::Room(room) => Cli::remove_room_by_id(&room.id),
+            RemoveEntityCommand::Device(device) => Cli::remove_device_by_id(&device.id),
         }
     }
 }

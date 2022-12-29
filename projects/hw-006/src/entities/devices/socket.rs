@@ -1,6 +1,7 @@
 use crate::entities::reportable::{ReportError, Reportable};
 use serde_derive::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter, Result as FmtResult};
+use crate::entities::generate_id;
 
 /// [SocketStatus] enum represents the possible statuses of the smart socket. As for now, its
 /// small and simple enum containing only two possible states, but in the future it might be
@@ -28,10 +29,11 @@ impl Display for SocketStatus {
 /// `status`. I guess, there is no need to write it down the meaning of these additional fields
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Socket {
-    name: String,
-    description: Option<String>,
-    power_consumption: f32,
-    status: SocketStatus,
+    pub id: String,
+    pub name: String,
+    pub description: Option<String>,
+    pub power_consumption: f32,
+    pub status: SocketStatus,
 }
 
 /// An implementation of the Socket struct. All of these methods and functions are super obvious,
@@ -44,6 +46,7 @@ impl Socket {
     /// the [Default] implementation of the Socket struct.
     pub fn new(name: &str) -> Self {
         Self {
+            id: generate_id("sock_"),
             name: name.to_string(),
             ..Self::default()
         }
@@ -55,6 +58,7 @@ impl Socket {
     /// other fields will be derived from the [Default] implementation of the Socket struct.
     pub fn new_with_description(name: &str, description: &str) -> Self {
         Self {
+            id: generate_id("sock_"),
             name: name.to_string(),
             description: Some(description.to_string()),
             ..Self::default()
@@ -94,6 +98,7 @@ impl Socket {
 impl Default for Socket {
     fn default() -> Self {
         Self {
+            id: generate_id("socket_"),
             name: "Default socket".to_string(),
             description: None,
             power_consumption: 0.0,

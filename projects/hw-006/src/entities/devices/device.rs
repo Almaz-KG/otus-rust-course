@@ -29,6 +29,15 @@ pub enum Device {
     Thermometer(Thermometer),
 }
 
+impl Device {
+    pub fn id(&self) -> &String {
+        match self {
+            Device::Socket(socket) => { &socket.id }
+            Device::Thermometer(ther) => { &ther.id}
+        }
+    }
+}
+
 impl Display for Device {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> FmtResult {
         match self {

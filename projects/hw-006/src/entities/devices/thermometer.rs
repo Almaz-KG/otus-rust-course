@@ -1,5 +1,5 @@
 use crate::entities::reportable::{ReportError, Reportable};
-use crate::entities::{Measure, MeasureError};
+use crate::entities::{generate_id, Measure, MeasureError};
 use serde_derive::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter, Result as FmtResult};
 
@@ -8,8 +8,9 @@ use std::fmt::{Display, Formatter, Result as FmtResult};
 /// states and functionality. As for now, it's just a dummy thermometer
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Thermometer {
-    name: String,
-    description: Option<String>,
+    pub id: String,
+    pub name: String,
+    pub description: Option<String>,
 }
 
 /// A thermometer struct implementation, it mostly wrapper and dummy stub-logic inside each method.
@@ -18,6 +19,7 @@ impl Thermometer {
     /// real life we don't need the name of our thermometer.
     pub fn new(name: &str) -> Self {
         Self {
+            id: generate_id("ther_"),
             name: name.to_string(),
             description: None,
         }
@@ -27,6 +29,7 @@ impl Thermometer {
     /// struct, because in the real life we don't need the name of our thermometer.
     pub fn new_with_description(name: &str, description: &str) -> Self {
         Self {
+            id: generate_id("ther_"),
             name: name.to_string(),
             description: Some(description.to_string()),
         }

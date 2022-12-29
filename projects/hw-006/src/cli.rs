@@ -1,6 +1,6 @@
 use crate::entities::devices::{Device, Socket, Thermometer};
 use crate::entities::house::{Home, Room};
-use clap::{Args, Parser, Subcommand, ValueEnum};
+use clap::{Args, ArgGroup, Parser, Subcommand, ValueEnum};
 use std::fs;
 use std::io::BufReader;
 use std::path::PathBuf;
@@ -110,6 +110,22 @@ struct EntityRemoveCommandWrapper {
     command: RemoveEntityCommand,
 }
 
+#[derive(Args, Debug)]
+#[command(group(ArgGroup::new("args").required(true).args(["homes", "rooms", "devices"])))]
+struct ListEntityCommand {
+    /// List all homes
+    #[arg(short = 'a', long)]
+    homes: bool,
+
+    /// List all rooms
+    #[arg(short, long)]
+    rooms: bool,
+
+    /// List all devices
+    #[arg(short, long)]
+    devices: bool,
+}
+
 #[derive(Subcommand, Debug)]
 enum Command {
     /// Initialize the storage for working with current smart-home setup. It must be the first
@@ -125,14 +141,8 @@ enum Command {
     /// Subcommand for removing an entity
     Remove(EntityRemoveCommandWrapper),
 
-    /// Subcommand for interacting with home entity
-    Home,
-
-    /// Subcommand for interacting with room entity
-    Room,
-
-    /// Subcommand for interacting with device entity
-    Device,
+    /// List all entities in the repository
+    List(ListEntityCommand),
 
     /// Request measurement for specific device in the home
     Measure(MakeMeasure),
@@ -155,10 +165,8 @@ impl Cli {
             Command::Status => Cli::status(),
             Command::New(command) => Cli::handle_new_command(command.command),
             Command::Remove(command) => Cli::handle_remove_command(command.command),
-            Command::Home => {}
-            Command::Room => {}
-            Command::Device => {}
             Command::Measure(_) => {}
+            Command::List(entity) => Cli::handle_list_command(entity),
         }
     }
 
@@ -523,6 +531,63 @@ impl Cli {
             RemoveEntityCommand::Home(home) => Cli::remove_home_by_id(&home.id),
             RemoveEntityCommand::Room(room) => Cli::remove_room_by_id(&room.id),
             RemoveEntityCommand::Device(device) => Cli::remove_device_by_id(&device.id),
+        }
+    }
+
+    fn handle_list_command(command: ListEntityCommand){
+        fn print_home_ids(){
+            match Cli::read_smart_home_status() {
+                Ok(state) => {
+                    if let Some(homes) = state {
+                        for home in homes {
+                            println!("{}", home.id)
+                        }
+                    }
+                }
+                Err(msg) => {eprintln!("{}", msg)}
+            }
+        }
+
+        fn print_room_ids(){
+            match Cli::read_smart_home_status() {
+                Ok(state) => {
+                    if let Some(homes) = state {
+                        for home in homes {
+                            for room in home.rooms {
+                                println!("{}", room.id)
+                            }
+                        }
+                    }
+                }
+                Err(msg) => {eprintln!("{}", msg)}
+            }
+        }
+
+        fn print_device_ids(){
+            match Cli::read_smart_home_status() {
+                Ok(state) => {
+                    if let Some(homes) = state {
+                        for home in homes {
+                            for room in home.rooms {
+                                for device in room.devices {
+                                    println!("{}", device.id())
+                                }
+                            }
+                        }
+                    }
+                }
+                Err(msg) => {eprintln!("{}", msg)}
+            }
+        }
+
+        if command.homes {
+            print_home_ids()
+        }
+        if command.rooms {
+            print_room_ids()
+        }
+        if command.devices {
+            print_device_ids()
         }
     }
 }

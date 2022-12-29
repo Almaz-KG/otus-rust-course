@@ -32,8 +32,8 @@ pub enum Device {
 impl Device {
     pub fn id(&self) -> &String {
         match self {
-            Device::Socket(socket) => { &socket.id }
-            Device::Thermometer(ther) => { &ther.id}
+            Device::Socket(socket) => &socket.id,
+            Device::Thermometer(ther) => &ther.id,
         }
     }
 }

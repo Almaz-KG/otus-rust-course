@@ -1,7 +1,7 @@
+use crate::entities::generate_id;
 use crate::entities::reportable::{ReportError, Reportable};
 use serde_derive::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter, Result as FmtResult};
-use crate::entities::generate_id;
 
 /// [SocketStatus] enum represents the possible statuses of the smart socket. As for now, its
 /// small and simple enum containing only two possible states, but in the future it might be

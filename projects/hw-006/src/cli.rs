@@ -1,6 +1,6 @@
 use crate::entities::devices::{Device, Socket, Thermometer};
 use crate::entities::house::{Home, Room};
-use clap::{Args, ArgGroup, Parser, Subcommand, ValueEnum};
+use clap::{ArgGroup, Args, Parser, Subcommand, ValueEnum};
 use std::fs;
 use std::io::BufReader;
 use std::path::PathBuf;
@@ -83,7 +83,7 @@ enum CreateEntity {
 struct RemoveEntity {
     /// The id of the entity to be deleted
     #[arg(short, long, value_name = "id")]
-    id: String
+    id: String,
 }
 
 #[derive(Subcommand, Debug)]
@@ -226,9 +226,7 @@ impl Cli {
             Ok(smart_home) => smart_home.and_then(|homes| {
                 for home in homes {
                     for room in home.rooms.into_iter() {
-                        let option = room.devices
-                            .iter()
-                            .find(|d| d.id() == device_id);
+                        let option = room.devices.iter().find(|d| d.id() == device_id);
 
                         if option.is_some() {
                             return Some(room);
@@ -441,16 +439,13 @@ impl Cli {
         }
     }
 
-    fn remove_home_by_id(id: &str){
+    fn remove_home_by_id(id: &str) {
         let current_state = Cli::read_smart_home_status();
 
         match current_state {
             Ok(state) => {
                 if let Some(homes) = state {
-                    let new_state: Vec<Home> = homes
-                        .into_iter()
-                        .filter(|h| h.id != id)
-                        .collect();
+                    let new_state: Vec<Home> = homes.into_iter().filter(|h| h.id != id).collect();
 
                     if let Err(msg) = Cli::update_state(Some(new_state)) {
                         eprintln!("Unable to save changes: {}", msg)
@@ -463,24 +458,20 @@ impl Cli {
         }
     }
 
-    fn remove_room_by_id(id: &str){
+    fn remove_room_by_id(id: &str) {
         let current_state = Cli::read_smart_home_status();
 
         match current_state {
             Ok(state) => {
                 if let Some(homes) = state {
                     if let Some(mut home) = Cli::find_home_by_room_id(id) {
-                        let rooms: Vec<Room> = home.rooms
-                            .into_iter()
-                            .filter(|r| r.id != id)
-                            .collect();
+                        let rooms: Vec<Room> =
+                            home.rooms.into_iter().filter(|r| r.id != id).collect();
 
                         home.rooms = rooms;
 
-                        let mut new_state: Vec<Home> = homes
-                            .into_iter()
-                            .filter(|h| h.id != home.id)
-                            .collect();
+                        let mut new_state: Vec<Home> =
+                            homes.into_iter().filter(|h| h.id != home.id).collect();
 
                         new_state.push(home);
 
@@ -494,20 +485,17 @@ impl Cli {
                 eprintln!("Unable remove home: {}", msg)
             }
         }
-
     }
 
-    fn remove_device_by_id(id: &str){
+    fn remove_device_by_id(id: &str) {
         if let Some(mut room) = Cli::find_room_by_device_id(id) {
-            let new_devices = room
-                .devices
-                .into_iter()
-                .filter(|d| d.id() != id)
-                .collect();
+            let new_devices = room.devices.into_iter().filter(|d| d.id() != id).collect();
 
             room.devices = new_devices;
             if let Some(mut home) = Cli::find_home_by_room_id(&room.id) {
-                let mut new_rooms: Vec<Room> = home.rooms.iter()
+                let mut new_rooms: Vec<Room> = home
+                    .rooms
+                    .iter()
                     .filter(|r| r.id != room.id)
                     .cloned()
                     .collect();
@@ -534,8 +522,8 @@ impl Cli {
         }
     }
 
-    fn handle_list_command(command: ListEntityCommand){
-        fn print_home_ids(){
+    fn handle_list_command(command: ListEntityCommand) {
+        fn print_home_ids() {
             match Cli::read_smart_home_status() {
                 Ok(state) => {
                     if let Some(homes) = state {
@@ -544,11 +532,13 @@ impl Cli {
                         }
                     }
                 }
-                Err(msg) => {eprintln!("{}", msg)}
+                Err(msg) => {
+                    eprintln!("{}", msg)
+                }
             }
         }
 
-        fn print_room_ids(){
+        fn print_room_ids() {
             match Cli::read_smart_home_status() {
                 Ok(state) => {
                     if let Some(homes) = state {
@@ -559,11 +549,13 @@ impl Cli {
                         }
                     }
                 }
-                Err(msg) => {eprintln!("{}", msg)}
+                Err(msg) => {
+                    eprintln!("{}", msg)
+                }
             }
         }
 
-        fn print_device_ids(){
+        fn print_device_ids() {
             match Cli::read_smart_home_status() {
                 Ok(state) => {
                     if let Some(homes) = state {
@@ -576,7 +568,9 @@ impl Cli {
                         }
                     }
                 }
-                Err(msg) => {eprintln!("{}", msg)}
+                Err(msg) => {
+                    eprintln!("{}", msg)
+                }
             }
         }
 

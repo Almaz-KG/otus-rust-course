@@ -1,10 +1,11 @@
 use crate::entities::reportable::{ReportError, Reportable};
+use serde_derive::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter, Result as FmtResult};
 
 /// [SocketStatus] enum represents the possible statuses of the smart socket. As for now, its
 /// small and simple enum containing only two possible states, but in the future it might be
 /// enriched by additional rare-usable statuses.
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum SocketStatus {
     /// The socket is enabled and it might provide the report about socket
     Enabled,
@@ -25,7 +26,7 @@ impl Display for SocketStatus {
 /// A representation of the smart socket. Each device entity in this project must have the name
 /// and description. Socket entity also has two additional fields such as `power_consumption` and
 /// `status`. I guess, there is no need to write it down the meaning of these additional fields
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Socket {
     name: String,
     description: Option<String>,

@@ -1,6 +1,7 @@
 use super::socket::Socket;
 use super::thermometer::Thermometer;
 use crate::entities::{ReportError, Reportable};
+use serde_derive::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter, Result as FmtResult};
 
 /// This is a common Trait representing variety of devices in Smart Home project. Currently it
@@ -22,7 +23,7 @@ use std::fmt::{Display, Formatter, Result as FmtResult};
 /// project, he/she will forced to update this enum, as well as update all places where this
 /// enum was used, it's not cool at all. A classical `composition` pattern might be considered as
 /// one of possible solution for the `extension` limitation
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum Device {
     Socket(Socket),
     Thermometer(Thermometer),

@@ -2,12 +2,14 @@ use crate::entities::devices::Device;
 use crate::entities::house::room::Room;
 use crate::entities::reportable::Reportable;
 use crate::entities::ReportError;
+use serde_derive::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter, Result as FmtResult};
 
 /// A [Home] struct represents the Smart House wrapper. Each home must contain a `name`, an
 /// optional `description`, and a list of the [Room]s. All these nested fields of the struct
 /// might be used for the reporting purpose. As for now, all these fields are used for full
 /// reporting, and the only `name` field is used for short reporting.
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Home {
     name: String,
     description: Option<String>,

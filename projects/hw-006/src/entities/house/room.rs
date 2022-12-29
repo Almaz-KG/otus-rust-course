@@ -1,10 +1,12 @@
 use crate::entities::devices::Device;
 use crate::entities::reportable::{ReportError, Reportable};
+use serde_derive::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter, Result as FmtResult};
 
 /// A [Room] entity represents a room in the Home. The home might have many rooms. Each room
 /// instance represents with the `name`, `description` and the list of the devices located in the
 /// room.
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Room {
     pub name: String,
     pub description: Option<String>,

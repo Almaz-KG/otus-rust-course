@@ -1,11 +1,12 @@
 use crate::entities::reportable::{ReportError, Reportable};
 use crate::entities::{Measure, MeasureError};
+use serde_derive::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter, Result as FmtResult};
 
 /// A super short and stupid wrapper around the Thermometer entity. In theory and the future
 /// implementations, it should become more robust and meaningful entity with variety internal
 /// states and functionality. As for now, it's just a dummy thermometer
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Thermometer {
     name: String,
     description: Option<String>,

@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 use hw_006::entities::devices::{Device, Socket, Thermometer};
 use hw_006::entities::house::{Home, Room};
 use hw_006::entities::Reportable;
@@ -23,13 +25,13 @@ fn show_usage_of_room_entity() {
 }
 
 fn show_usage_of_socket_entity() {
-    let socket = Socket::new("Main light socket", "Located near the entry door");
+    let socket = Socket::new_with_description("Main light socket", "Located near the entry door");
 
     println!("{}", socket);
 }
 
 fn show_usage_of_thermometer_entity() {
-    let thermometer = Thermometer::new(
+    let thermometer = Thermometer::new_with_description(
         "A thermometer behind the window",
         "Super old mercury thermometer",
     );
@@ -45,11 +47,11 @@ fn main() {
             Room::build()
                 .with_name("Living room")
                 .with_description("Living room with 48 sq meter size")
-                .with_device(Device::Socket(Socket::new(
+                .with_device(Device::Socket(Socket::new_with_description(
                     "Main light socket",
                     "Located near the entry door",
                 )))
-                .with_device(Device::Socket(Socket::new(
+                .with_device(Device::Socket(Socket::new_with_description(
                     "Second light socket",
                     "Located near the window",
                 )))
@@ -60,11 +62,11 @@ fn main() {
             Room::build()
                 .with_name("Kitchen")
                 .with_description("The kingdom of my wife")
-                .with_device(Device::Socket(Socket::new(
+                .with_device(Device::Socket(Socket::new_with_description(
                     "The light socket",
                     "Located at the entry door",
                 )))
-                .with_device(Device::Thermometer(Thermometer::new(
+                .with_device(Device::Thermometer(Thermometer::new_with_description(
                     "A thermometer behind the window",
                     "Super old mercury thermometer",
                 )))

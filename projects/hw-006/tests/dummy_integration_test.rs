@@ -9,11 +9,11 @@ fn first_integration_test_ever() {
     let living_room = Room::build()
         .with_name("Living room")
         .with_description("Living room with 48 sq meter size")
-        .with_device(Device::Socket(Socket::new(
+        .with_device(Device::Socket(Socket::new_with_description(
             "Main light socket",
             "Located near the entry door",
         )))
-        .with_device(Device::Socket(Socket::new(
+        .with_device(Device::Socket(Socket::new_with_description(
             "Second light socket",
             "Located near the window",
         )))
@@ -25,11 +25,11 @@ fn first_integration_test_ever() {
     let kitchen = Room::build()
         .with_name("Kitchen")
         .with_description("The kingdom of my wife")
-        .with_device(Device::Socket(Socket::new(
+        .with_device(Device::Socket(Socket::new_with_description(
             "The light socket",
             "Located at the entry door",
         )))
-        .with_device(Device::Thermometer(Thermometer::new(
+        .with_device(Device::Thermometer(Thermometer::new_with_description(
             "A thermometer behind the window",
             "Super old mercury thermometer",
         )))

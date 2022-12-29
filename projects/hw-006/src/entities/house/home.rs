@@ -1,8 +1,7 @@
 use crate::entities::devices::Device;
 use crate::entities::house::room::Room;
 use crate::entities::reportable::Reportable;
-use crate::entities::ReportError;
-use rand::{distributions::Alphanumeric, Rng};
+use crate::entities::{generate_id, ReportError};
 use serde_derive::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter, Result as FmtResult};
 
@@ -10,7 +9,7 @@ use std::fmt::{Display, Formatter, Result as FmtResult};
 /// optional `description`, and a list of the [Room]s. All these nested fields of the struct
 /// might be used for the reporting purpose. As for now, all these fields are used for full
 /// reporting, and the only `name` field is used for short reporting.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Home {
     pub id: String,
     pub name: String,
@@ -121,16 +120,8 @@ impl HomeBuilder {
             return Err("Please, provide house name".to_string());
         }
 
-        let id: String = rand::thread_rng()
-            .sample_iter(&Alphanumeric)
-            .take(5)
-            .map(char::from)
-            .collect();
-
-        let id = format!("home_{}", id);
-
         let h = Home {
-            id,
+            id: generate_id("home"),
             name: self.name.unwrap(),
             description: self.description,
             rooms: self.rooms.unwrap_or_default(),

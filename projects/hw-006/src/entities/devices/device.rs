@@ -23,7 +23,7 @@ use std::fmt::{Display, Formatter, Result as FmtResult};
 /// project, he/she will forced to update this enum, as well as update all places where this
 /// enum was used, it's not cool at all. A classical `composition` pattern might be considered as
 /// one of possible solution for the `extension` limitation
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum Device {
     Socket(Socket),
     Thermometer(Thermometer),

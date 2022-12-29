@@ -22,3 +22,16 @@ pub use reportable::{ReportError, Reportable};
 /// container. All details of measurement should be hidden in the exact device implementation.
 mod measure;
 pub use measure::{Measure, MeasureError};
+
+pub(crate) fn generate_id(r#type: &str) -> String {
+    use rand::distributions::Alphanumeric;
+    use rand::Rng;
+
+    let id: String = rand::thread_rng()
+        .sample_iter(&Alphanumeric)
+        .take(5)
+        .map(char::from)
+        .collect();
+
+    format!("{}_{}", r#type, id)
+}

@@ -1,3 +1,4 @@
+use crate::entities::devices::{Device, Socket, Thermometer};
 use crate::entities::house::{Home, Room};
 use clap::{Args, Parser, Subcommand, ValueEnum};
 use std::fs;
@@ -97,18 +98,6 @@ enum CreateEntity {
     Device(CreateDevice),
 }
 
-// #[derive(Subcommand, Debug)]
-// enum EntitySubCommand {
-//     /// Remove entity by guid
-//     // #[command(subcommand)]
-//     Remove,
-//
-//     /// Create a new entity
-//     // #[command(subcommand)]
-//     New(CreateEntity),
-// }
-//
-
 #[derive(Args, Debug)]
 struct EntityCreateCommandWrapper {
     #[command(subcommand)]
@@ -158,8 +147,8 @@ impl Cli {
             Command::Status => Cli::status(),
             Command::Describe(_) => {}
             Command::New(command) => Cli::handle_new_command(command.command),
-            Command::Home => {},
-            Command::Room => { },
+            Command::Home => {}
+            Command::Room => {}
             Command::Device => {}
             Command::Measure(_) => {}
         }
@@ -184,24 +173,34 @@ impl Cli {
 
     fn find_home_by_id(id: &str) -> Option<Home> {
         match Cli::read_smart_home_status() {
-            Ok(smart_home) => {
-                match smart_home {
-                    None => None,
-                    Some(homes) => {
-                        for home in homes {
-                            if home.id == id {
-                                return Some(home);
-                            }
-                        }
-                        return None
+            Ok(smart_home) => smart_home.and_then(|homes| homes.into_iter().find(|h| h.id == id)),
+            Err(_) => None,
+        }
+    }
+
+    fn find_home_by_room_id(room_id: &str) -> Option<Home> {
+        match Cli::read_smart_home_status() {
+            Ok(smart_home) => smart_home.and_then(|homes| {
+                homes
+                    .into_iter()
+                    .find(|home| home.rooms.iter().any(|r| r.id == room_id))
+            }),
+            Err(_) => None,
+        }
+    }
+
+    fn find_room_by_id(id: &str) -> Option<Room> {
+        match Cli::read_smart_home_status() {
+            Ok(smart_home) => smart_home.and_then(|homes| {
+                for home in homes {
+                    let option = home.rooms.into_iter().find(|room| room.id == id);
+
+                    if option.is_some() {
+                        return option;
                     }
                 }
-                // let result: Option<&Home> =
-                //     .iter()
-                //     .flat_map(|homes| homes.iter().find(|h| h.id == id))
-                //     .collect();
-                // result
-            }
+                None
+            }),
             Err(_) => None,
         }
     }
@@ -238,6 +237,27 @@ impl Cli {
             Ok(())
         } else {
             Err("No repository found. Consider to init repository first".to_string())
+        }
+    }
+
+    fn update_home_state(home: Home) -> Result<(), String> {
+        let status = Cli::read_smart_home_status()?;
+
+        match status {
+            None => {
+                let new_state: SavedSmartHome = Some(vec![home]);
+                Cli::update_state(new_state)
+            }
+            Some(old_home) => {
+                let mut homes: Vec<Home> = old_home
+                    .iter()
+                    .filter(|h| h.id != home.id)
+                    .cloned()
+                    .collect();
+
+                homes.push(home);
+                Cli::update_state(Some(homes))
+            }
         }
     }
 
@@ -288,18 +308,15 @@ impl Cli {
         let home = if let Some(ref description) = create_home.description {
             Home::build()
                 .with_name(&create_home.name)
-                .with_description(&description)
+                .with_description(description)
                 .build()
         } else {
             Home::build().with_name(&create_home.name).build()
         }
         .expect("Unable create a home");
 
-        match Cli::update_state(Some(vec![home])) {
-            Err(msg) => {
-                eprintln!("Unable to save changes: {}", msg)
-            }
-            _ => {}
+        if let Err(msg) = Cli::update_state(Some(vec![home])) {
+            eprintln!("Unable to save changes: {}", msg)
         }
     }
 
@@ -309,20 +326,17 @@ impl Cli {
                 let new_room = if let Some(ref description) = room.description {
                     Room::build()
                         .with_name(&room.name)
-                        .with_description(&description)
+                        .with_description(description)
                         .build()
                 } else {
                     Room::build().with_name(&room.name).build()
                 }
-                    .expect("Unable create a home");
+                .expect("Unable create a home");
 
                 home.rooms.push(new_room);
 
-                match Cli::update_state(Some(vec![home])) {
-                    Err(msg) => {
-                        eprintln!("Unable to save changes: {}", msg)
-                    }
-                    _ => {}
+                if let Err(msg) = Cli::update_state(Some(vec![home])) {
+                    eprintln!("Unable to save changes: {}", msg)
                 }
             }
             _ => {
@@ -331,14 +345,61 @@ impl Cli {
         }
     }
 
-    fn handle_new_command(new: CreateEntity) {
-        match new {
-            CreateEntity::Home(home) => Cli::handle_create_home_command(home),
-            CreateEntity::Room(room) => Cli::handle_create_room_command(room),
+    fn handle_create_device_command(device: CreateDevice) {
+        fn create_socket(device: &CreateDevice) -> Device {
+            let socket = match device.description.as_ref() {
+                None => Socket::new(&device.name),
+                Some(dsc) => Socket::new_with_description(&device.name, dsc),
+            };
+
+            Device::Socket(socket)
+        }
+
+        fn create_thermometer(device: &CreateDevice) -> Device {
+            let thermometer = match device.description.as_ref() {
+                None => Thermometer::new(&device.name),
+                Some(dsc) => Thermometer::new_with_description(&device.name, dsc),
+            };
+
+            Device::Thermometer(thermometer)
+        }
+
+        match Cli::find_room_by_id(&device.room_id) {
+            Some(mut room) => {
+                let device = match device.r#type {
+                    DeviceType::Socket => create_socket(&device),
+                    DeviceType::Thermometer => create_thermometer(&device),
+                };
+
+                room.devices.push(device);
+                let mut home =
+                    Cli::find_home_by_room_id(&room.id).expect("Unable find home by room_id");
+
+                let mut rooms: Vec<Room> = home
+                    .rooms
+                    .iter()
+                    .filter(|r| r.id != room.id)
+                    .cloned()
+                    .collect();
+
+                rooms.push(room);
+                home.rooms = rooms;
+
+                if let Err(msg) = Cli::update_home_state(home) {
+                    eprintln!("Unable to save changes: {}", msg)
+                }
+            }
             _ => {
-                eprintln!("Illegal state")
+                eprintln!("Room with id: {} not found", &device.room_id)
             }
         }
     }
 
+    fn handle_new_command(new: CreateEntity) {
+        match new {
+            CreateEntity::Home(home) => Cli::handle_create_home_command(home),
+            CreateEntity::Room(room) => Cli::handle_create_room_command(room),
+            CreateEntity::Device(device) => Cli::handle_create_device_command(device),
+        }
+    }
 }

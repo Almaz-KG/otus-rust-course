@@ -5,7 +5,7 @@ use std::fmt::{Display, Formatter, Result as FmtResult};
 /// [SocketStatus] enum represents the possible statuses of the smart socket. As for now, its
 /// small and simple enum containing only two possible states, but in the future it might be
 /// enriched by additional rare-usable statuses.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum SocketStatus {
     /// The socket is enabled and it might provide the report about socket
     Enabled,
@@ -26,7 +26,7 @@ impl Display for SocketStatus {
 /// A representation of the smart socket. Each device entity in this project must have the name
 /// and description. Socket entity also has two additional fields such as `power_consumption` and
 /// `status`. I guess, there is no need to write it down the meaning of these additional fields
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Socket {
     name: String,
     description: Option<String>,
@@ -39,10 +39,21 @@ pub struct Socket {
 /// of the rust library docs.
 impl Socket {
     /// The associated function for creating a new instance of the smart Socket It will create an
+    /// instance with the given name. It will create a clone of each given parameter, so be
+    /// careful for memory leaks especially with long name. All other fields will be derived from
+    /// the [Default] implementation of the Socket struct.
+    pub fn new(name: &str) -> Self {
+        Self {
+            name: name.to_string(),
+            ..Self::default()
+        }
+    }
+
+    /// The associated function for creating a new instance of the smart Socket. It will create an
     /// instance with the given name and description. It will create a clone of each given
     /// parameter, so be careful for memory leaks especially with long name and description. All
     /// other fields will be derived from the [Default] implementation of the Socket struct.
-    pub fn new(name: &str, description: &str) -> Self {
+    pub fn new_with_description(name: &str, description: &str) -> Self {
         Self {
             name: name.to_string(),
             description: Some(description.to_string()),

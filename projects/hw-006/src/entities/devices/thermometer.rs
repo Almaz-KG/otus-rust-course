@@ -6,7 +6,7 @@ use std::fmt::{Display, Formatter, Result as FmtResult};
 /// A super short and stupid wrapper around the Thermometer entity. In theory and the future
 /// implementations, it should become more robust and meaningful entity with variety internal
 /// states and functionality. As for now, it's just a dummy thermometer
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Thermometer {
     name: String,
     description: Option<String>,
@@ -14,9 +14,18 @@ pub struct Thermometer {
 
 /// A thermometer struct implementation, it mostly wrapper and dummy stub-logic inside each method.
 impl Thermometer {
+    /// Creates a new instance of [Thermometer] by given name. It's a fake struct, because in the
+    /// real life we don't need the name of our thermometer.
+    pub fn new(name: &str) -> Self {
+        Self {
+            name: name.to_string(),
+            description: None,
+        }
+    }
+
     /// Creates a new instance of [Thermometer] by given name and description. It's a fake
     /// struct, because in the real life we don't need the name of our thermometer.
-    pub fn new(name: &str, description: &str) -> Self {
+    pub fn new_with_description(name: &str, description: &str) -> Self {
         Self {
             name: name.to_string(),
             description: Some(description.to_string()),

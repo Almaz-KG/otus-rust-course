@@ -1,4 +1,5 @@
 use crate::entities::devices::Device;
+use crate::entities::generate_id;
 use crate::entities::reportable::{ReportError, Reportable};
 use serde_derive::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter, Result as FmtResult};
@@ -6,8 +7,9 @@ use std::fmt::{Display, Formatter, Result as FmtResult};
 /// A [Room] entity represents a room in the Home. The home might have many rooms. Each room
 /// instance represents with the `name`, `description` and the list of the devices located in the
 /// room.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Room {
+    pub id: String,
     pub name: String,
     pub description: Option<String>,
     pub devices: Vec<Device>,
@@ -85,7 +87,7 @@ impl RoomBuilder {
     /// case, it should return a valid home instance
     ///
     /// ```
-    /// use hw_005::entities::house::RoomBuilder;
+    /// use hw_006::entities::house::RoomBuilder;
     /// let builder = RoomBuilder::default();
     /// let room = builder.build();
     ///
@@ -97,6 +99,7 @@ impl RoomBuilder {
         }
 
         let r = Room {
+            id: generate_id("room"),
             name: self.name.unwrap(),
             description: self.description,
             devices: self.devices.unwrap_or_default(),

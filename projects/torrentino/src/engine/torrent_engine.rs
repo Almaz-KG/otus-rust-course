@@ -1,12 +1,13 @@
 #![allow(dead_code)]
 
-use crate::protocol::entities::{HandshakeRequest, Torrent, TrackerProtocol, TrackerUrl};
+use crate::protocol::entities::{HANDSHAKE_SIZE, HandshakeRequest, MessageType, PeerState, Torrent, TrackerProtocol, TrackerUrl};
 use crate::protocol::net::{HttpClient, NetworkClient, Peer, UdpClient};
 use std::collections::HashMap;
 use std::fmt::Debug;
-use std::io::{Read, Write};
+use std::io::{Cursor, Read, Write};
 use std::net::{IpAddr, SocketAddr, TcpStream};
 use std::time::Duration;
+use byteorder::ReadBytesExt;
 use crate::engine::generate_peer_id;
 
 pub struct TorrentEngine {
@@ -66,6 +67,42 @@ impl TorrentEngine {
     /// Finally you will receive a piece message, which will contain the bytes of data that you
     /// requested.
 
+    fn download_portions(&self,
+                         peer_id: &[u8; 20],
+                         torrent: &Torrent,
+                         stream: &mut TcpStream,
+                         bitfield: Vec<bool>) -> Result<(), String>{
+        println!("Pieces {:?}", torrent.info.piece_length);
+
+        // if bitfield.len() != torrent.info.piece_length as usize {
+        //     dbg!(bitfield.len());
+        //     dbg!(torrent.info.piece_length);
+        //     println!("The pieces length is not equal")
+        // } else {
+        for (index, have) in bitfield.iter().enumerate() {
+            if *have {
+                println!("Processing... {}", index);
+
+                let request = MessageType::Request(index as u32, 0, u32::MAX);
+                stream
+                    .write_all(&request.to_bytes())
+                    .map_err(|e| format!("Unable send request"))?;
+
+                let mut buff = [0u8; 1024];
+                let bytes_read_cnt = stream.read(&mut buff)
+                    .map_err(|e| format!("Unable to read from the peer: {}", e))?;
+
+                println!("Response: {}", bytes_read_cnt);
+                println!("Content: {:?}", &buff[0..bytes_read_cnt]);
+            } else {
+                println!("Peer doesn't have {} piece", index)
+            }
+        }
+        // }
+
+        Ok(())
+    }
+
     fn download_from_peer(&self,
                           peer_id: &[u8; 20],
                           torrent: &Torrent,
@@ -86,14 +123,36 @@ impl TorrentEngine {
             .map_err(|e| format!("Unable to write to TCP connection: {}", e))?;
 
         let mut buff = [0u8; 1024];
-        let result = stream.read(&mut buff)
+        let bytes_read_cnt = stream.read(&mut buff)
             .map_err(|e| format!("Unable to read from TCP connection: {}", e))?;
 
-        println!("READ");
-        println!("{:?}", &buff[0..result]);
+        if bytes_read_cnt < HANDSHAKE_SIZE {
+            Err("Unexpected response length from peer".to_string())
+        } else if !handshake.is_valid_response(&buff[0..HANDSHAKE_SIZE]){
+            Err("Invalid response from peer".to_string())
+        } else {
+            if bytes_read_cnt >= HANDSHAKE_SIZE {
+                // make interest request
+                let interested_request = MessageType::Interested.to_bytes();
 
+                stream.write_all(&interested_request)
+                    .map_err(|e| format!("Unable write interested request to the peer {}", e))?;
 
-        todo!()
+                let bytes_read_cnt = stream.read(&mut buff)
+                    .map_err(|e| format!("Unable to read from the peer: {}", e))?;
+
+                let response = &buff[0..bytes_read_cnt];
+                let message_type = MessageType::from_bytes(&response)?;
+                match message_type {
+                    MessageType::Have(_) => {}
+                    MessageType::Bitfield(portions) => {
+                        self.download_portions(peer_id, torrent, &mut stream, portions)?;
+                    }
+                    _ => {}
+                }
+            }
+            todo!()
+        }
     }
 
     fn download_from_peers(&self, torrent: &Torrent, peers: &Vec<Peer>) -> Result<(), String> {

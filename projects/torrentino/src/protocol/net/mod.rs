@@ -1,6 +1,7 @@
 mod http_client;
 mod network_client;
 mod udp_client;
+mod download_from_peer;
 
 use std::fmt::{Display, Formatter};
 pub use http_client::*;

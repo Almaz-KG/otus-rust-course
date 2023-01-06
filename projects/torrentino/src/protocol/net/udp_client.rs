@@ -101,8 +101,8 @@ impl NetworkClient for UdpClient {
         let response_content = &buffer[0..size];
 
         // deserialize the response content into Rust struct
-        let response: ConnectionResponse = bincode::deserialize(response_content)
-            .map_err(|e| format!("{}", e))?;
+        let response: ConnectionResponse =
+            bincode::deserialize(response_content).map_err(|e| format!("{}", e))?;
 
         assert_eq!(request.transaction_id, response.transaction_id);
         assert_eq!(request.action, response.action);
@@ -115,8 +115,11 @@ impl NetworkClient for UdpClient {
         Ok(connection_id)
     }
 
-    fn get_peers_list(&self, torrent: &Torrent, tracker_url: &TrackerUrl)
-        -> Result<Vec<Peer>, String> {
+    fn get_peers_list(
+        &self,
+        torrent: &Torrent,
+        tracker_url: &TrackerUrl,
+    ) -> Result<Vec<Peer>, String> {
         let connection_id = self.obtain_connection_id(tracker_url)?;
 
         let info_hash: [u8; 20] = torrent.info_hash()?;

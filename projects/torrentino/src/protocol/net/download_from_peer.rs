@@ -9,7 +9,5 @@
 /// <----                 receive have or bitfield message
 /// send request message                                ->
 /// <-----------                 receive a requested piece
-
-fn download() {
-
-}
+#[allow(dead_code)]
+fn download() {}

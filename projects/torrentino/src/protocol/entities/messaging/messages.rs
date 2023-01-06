@@ -1,6 +1,7 @@
-use std::io::Cursor;
+#![allow(unused, dead_code)]
 use byteorder::{BigEndian, ReadBytesExt};
 use bytes::{Buf, BufMut, Bytes, BytesMut};
+use std::io::Cursor;
 
 /// The initial state of each peer in the swarm is the Chocked and Not Interested, which means
 /// nobody wants to speak with each other.
@@ -23,7 +24,7 @@ pub enum PeerState {
 /// All of the remaining messages in the protocol take the form of
 /// `<length prefix><messageID><payload>`. The length prefix is a four byte big-endian value.
 /// The message ID is a single decimal byte. The payload is message dependent.
-#[derive(Debug, PartialEq, PartialOrd)]
+#[derive(Debug, Eq, PartialEq, PartialOrd)]
 pub enum MessageType {
     /// keep-alive: <len=0000>
     ///      The keep-alive message is a message with zero bytes, specified with the length prefix
@@ -96,8 +97,8 @@ impl MessageType {
     fn build_bitfield_from_cursor(cursor: &mut Cursor<&[u8]>, len: u32) -> Result<Self, String> {
         let mut result = vec![false; len as usize];
 
-        for i in 0..result.len() {
-            result[i] = cursor.get_u8() == u8::MAX
+        for item in &mut result {
+            *item = (cursor.get_u8() == u8::MAX);
         }
 
         Ok(MessageType::Bitfield(result))
@@ -107,7 +108,7 @@ impl MessageType {
         todo!()
     }
 
-    fn build_piece_from_cursor(cursor: &mut Cursor<&[u8]>) -> Result<Self, String> {
+    fn build_piece_from_cursor(cursor: &mut Cursor<&[u8]>, len: u32) -> Result<Self, String> {
         todo!()
     }
 
@@ -127,7 +128,7 @@ impl MessageType {
                 interested.extend_from_slice(&[2]);
                 assert_eq!(interested.len(), 5);
                 interested.freeze()
-            },
+            }
 
             MessageType::Request(index, start, len) => {
                 let mut request = BytesMut::with_capacity(17);
@@ -139,7 +140,7 @@ impl MessageType {
                 assert_eq!(request.len(), 17);
                 request.freeze()
             }
-            _ => todo!()
+            _ => todo!(),
         }
     }
 
@@ -155,9 +156,9 @@ impl MessageType {
             (1, 2) => Ok(Self::Interested),
             (1, 3) => Ok(Self::NotInterested),
             (5, 4) => MessageType::build_have_from_cursor(&mut cursor),
-            (len @ _, 5) => MessageType::build_bitfield_from_cursor(&mut cursor, len - 1),
+            (len, 5) => MessageType::build_bitfield_from_cursor(&mut cursor, len - 1),
             (13, 6) => MessageType::build_request_from_cursor(&mut cursor),
-            (len @ _, 7) => MessageType::build_piece_from_cursor(&mut cursor),
+            (len, 7) => MessageType::build_piece_from_cursor(&mut cursor, len),
             (13, 8) => MessageType::build_cancel_from_cursor(&mut cursor),
             (3, 9) => MessageType::build_port_from_cursor(&mut cursor),
             (_, _) => Err("Unsupported message type".to_string()),
@@ -177,10 +178,11 @@ mod tests {
     }
 
     #[test]
-    fn test_bitfield_request(){
-        let content = [0, 0, 0, 25, 5,
-            255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-            255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 254];
+    fn test_bitfield_request() {
+        let content = [
+            0, 0, 0, 25, 5, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+            255, 255, 255, 255, 255, 255, 255, 255, 255, 254,
+        ];
 
         let bitfield = MessageType::from_bytes(&content).unwrap();
 
@@ -191,13 +193,13 @@ mod tests {
                 expected[len - 1] = false;
 
                 assert_eq!(bit.as_slice(), expected);
-            },
-            _ => panic!("Unexpected message type")
+            }
+            _ => panic!("Unexpected message type"),
         }
     }
 
     #[test]
-    fn test_request_request(){
+    fn test_request_request() {
         let bytes = MessageType::Request(1, 0, u32::MAX).to_bytes();
 
         println!("{:?}", bytes.to_vec());

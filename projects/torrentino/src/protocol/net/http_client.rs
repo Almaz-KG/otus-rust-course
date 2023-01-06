@@ -16,8 +16,6 @@ impl NetworkClient for HttpClient {
         _torrent: &Torrent,
         _tracker_url: &TrackerUrl,
     ) -> Result<Vec<Peer>, String> {
-
-
         unimplemented!()
     }
 }

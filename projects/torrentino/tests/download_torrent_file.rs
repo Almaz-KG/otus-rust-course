@@ -6,9 +6,12 @@ fn download_torrent_file() {
     Command::cargo_bin("torrentino")
         .unwrap()
         .args(&[
-            "-f", "resources/test_file_one_tracker.torrent",
-            "-t", "1",
-            "-o", "target"
+            "-f",
+            "resources/test_file_one_tracker.torrent",
+            "-t",
+            "1",
+            "-o",
+            "target",
         ])
         .assert()
         .failure()

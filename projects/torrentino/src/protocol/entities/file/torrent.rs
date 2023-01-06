@@ -107,7 +107,7 @@ impl Display for Torrent {
     #[allow(unused_must_use)]
     fn fmt(&self, formatter: &mut Formatter<'_>) -> FmtResult {
         fn write_announce_list(announce_list: &Vec<Vec<String>>, formatter: &mut Formatter<'_>) {
-            if !announce_list.is_empty() && !announce_list[0].is_empty(){
+            if !announce_list.is_empty() && !announce_list[0].is_empty() {
                 write(
                     &format!("Tier 1: {}", &announce_list[0][0]),
                     "Announce List",
@@ -169,7 +169,12 @@ impl Display for Torrent {
         write_announce_list(announce_list, formatter);
 
         // write_option(self.info..as_ref(), "Piece Size", formatter);
-        // write(self.info.pieces.as_ref(), "Piece Count", formatter);
+        let pieces_count = self.info.pieces.clone().into_vec().len();
+        let pieces = format!("{:?}", self.info.pieces.clone());
+
+        write(&pieces_count, "Piece Count", formatter);
+        write(&pieces, "Piece", formatter);
+
         write(
             &self
                 .info

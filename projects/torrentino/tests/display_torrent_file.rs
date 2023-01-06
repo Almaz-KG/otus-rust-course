@@ -9,7 +9,10 @@ fn display_torrent_file(file: PathBuf) {
 
 #[test]
 fn display_torrents() {
-    let file1: PathBuf = "resources/test_file_one_tracker.torrent".to_string().parse().unwrap();
+    let file1: PathBuf = "resources/test_file_one_tracker.torrent"
+        .to_string()
+        .parse()
+        .unwrap();
     // let file1: PathBuf = "resources/test_file.torrent".to_string().parse().unwrap();
     // let file2: PathBuf = "resources/ubuntu.torrent".to_string().parse().unwrap();
 

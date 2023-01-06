@@ -5,11 +5,7 @@ use std::process::Command;
 fn no_torrent_file() {
     Command::cargo_bin("torrentino")
         .unwrap()
-        .args(&[
-            "-f", "no_torrent_file",
-            "-t", "1",
-            "-o", "target"
-        ])
+        .args(&["-f", "no_torrent_file", "-t", "1", "-o", "target"])
         .assert()
         .failure()
         .code(1);
@@ -19,13 +15,8 @@ fn no_torrent_file() {
 fn no_torrent_file_specified() {
     Command::cargo_bin("torrentino")
         .unwrap()
-        .args(&[
-            "-t", "1",
-            "-o", "target"
-        ])
+        .args(&["-t", "1", "-o", "target"])
         .assert()
         .failure()
         .code(1);
 }
-
-

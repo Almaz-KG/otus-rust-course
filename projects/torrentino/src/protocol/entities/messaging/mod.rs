@@ -1,9 +1,9 @@
 mod announce;
-mod requests;
 mod handshake;
 mod messages;
+mod requests;
 
 pub use announce::*;
-pub use requests::*;
 pub use handshake::*;
 pub use messages::*;
+pub use requests::*;

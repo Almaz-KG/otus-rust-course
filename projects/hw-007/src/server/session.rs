@@ -13,13 +13,13 @@
 //! <---------------------------------exit
 //! CloseConnection---------------------->
 
+use crate::cli::{Arguments as CliArguments, Command, CommandHandler};
+use anyhow::{anyhow, Result};
+use clap::Parser;
 use std::fmt::{Display, Formatter};
 use std::io::{Read, Write};
 use std::net::{Shutdown, TcpStream};
 use std::time::Duration;
-use anyhow::{Result, anyhow};
-use crate::cli::{Arguments as CliArguments, Command, CommandHandler};
-use clap::Parser;
 
 pub const DEFAULT_READ_WRITE_TIMEOUT_IN_SECS: Duration = Duration::from_secs(120);
 
@@ -60,12 +60,14 @@ impl TcpSession {
         match self.stream.read(&mut buf) {
             Ok(size) => {
                 // need to delete new-line symbol at the end of the line
-                let last_index = if (buf[size - 1] as char) == '\n' { size - 1 } else { size };
+                let last_index = if (buf[size - 1] as char) == '\n' {
+                    size - 1
+                } else {
+                    size
+                };
                 Ok(String::from_utf8(buf[0..last_index].to_vec()).unwrap())
             }
-            Err(e) => {
-                Err(anyhow!("Unable read data from client: {:?}", e))
-            }
+            Err(e) => Err(anyhow!("Unable read data from client: {:?}", e)),
         }
     }
 
@@ -75,26 +77,22 @@ impl TcpSession {
         match self.stream.read(&mut buf) {
             Ok(size) => {
                 // need to delete new-line symbol at the end of the line
-                let last_index = if (buf[size - 1] as char) == '\n' { size - 1 } else { size };
+                let last_index = if (buf[size - 1] as char) == '\n' {
+                    size - 1
+                } else {
+                    size
+                };
 
                 let args = String::from_utf8(buf[0..last_index].to_vec()).unwrap();
-                let commands: Vec<String> = args.split(" ").map(|s| s.to_string()).collect();
+                let commands: Vec<String> = args.split(' ').map(|s| s.to_string()).collect();
                 Ok(commands)
             }
-            Err(e) => {
-                Err(anyhow!("Unable read data from client: {:?}", e))
-            }
+            Err(e) => Err(anyhow!("Unable read data from client: {:?}", e)),
         }
     }
 
     fn write_data(&mut self, message: &str) {
         self.stream.write_all(message.as_bytes()).unwrap()
-
-        // Ok(_) => {
-        //     stream.shutdown(Shutdown::Both).unwrap();
-        //     ConnectionStatus::Disconnected
-        // }
-        // Err(e) => ConnectionStatus::Error(format!("{:?}", e))
     }
 
     fn close_connection(&mut self) {
@@ -115,9 +113,7 @@ impl TcpSession {
                     ConnectionStatus::Error("handshake was expected".into())
                 }
             }
-            Err(msg) => {
-                ConnectionStatus::Error(format!("Error in handshake step {}", msg).into())
-            }
+            Err(msg) => ConnectionStatus::Error(format!("Error in handshake step {}", msg)),
         };
 
         self.status = status;
@@ -138,21 +134,17 @@ impl TcpSession {
                 let args = CliArguments::try_parse_from(command_args);
 
                 match args {
-                    Ok(args) => {
-                        match &args.command {
-                            Command::Init => {
-                                self.write_data("Not supported command in remote mode\n")
-                            }
-                            Command::Server(_) => {
-                                self.write_data("Not supported command in remote mode\n")
-                            }
-                            _ => {
-                                let output = &mut self.stream;
-                                let mut handler = CommandHandler::new(Box::new(output));
-                                handler.process(args.command);
-                            }
+                    Ok(args) => match &args.command {
+                        Command::Init => self.write_data("Not supported command in remote mode\n"),
+                        Command::Server(_) => {
+                            self.write_data("Not supported command in remote mode\n")
                         }
-                    }
+                        _ => {
+                            let output = &mut self.stream;
+                            let mut handler = CommandHandler::new(output);
+                            handler.process(args.command);
+                        }
+                    },
                     Err(e) => {
                         let error_message = e.render().to_string();
                         self.write_data(&error_message);
@@ -205,8 +197,8 @@ impl TcpSession {
 
 #[cfg(test)]
 mod tests {
+    use crate::cli::Arguments as CliArguments;
     use clap::Parser;
-    use crate::cli::{Arguments as CliArguments};
 
     #[test]
     fn parse_client_command() {
@@ -234,5 +226,4 @@ mod tests {
             }
         }
     }
-
 }

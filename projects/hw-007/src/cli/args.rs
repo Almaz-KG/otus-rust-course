@@ -119,9 +119,8 @@ pub struct EntityCreateCommandWrapper {
 
 pub enum DeviceStatusAction {
     Enable,
-    Disable
+    Disable,
 }
-
 
 #[derive(Args, Debug)]
 pub struct DeviceStatusCommand {
@@ -203,7 +202,7 @@ pub enum Command {
     Measure(MakeMeasure),
 
     /// TCP server for serving remove smart home features
-    Server(ServerCommandWrapper)
+    Server(ServerCommandWrapper),
 }
 
 #[derive(Parser, Debug)]

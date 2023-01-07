@@ -1,12 +1,12 @@
-use std::fs;
-use std::fs::File;
-use std::io::{BufReader, Write};
-use std::path::PathBuf;
-use anyhow::{Result, anyhow};
 use crate::cli::*;
 use crate::entities::devices::*;
 use crate::entities::house::*;
 use crate::server::TcpServer;
+use anyhow::{anyhow, Result};
+use std::fs;
+use std::fs::File;
+use std::io::{BufReader, Write};
+use std::path::PathBuf;
 
 const REPO_DIR: &str = ".smart-home";
 const SMART_HOME_FILE: &str = "smart-home.json";
@@ -14,11 +14,11 @@ const SMART_HOME_FILE: &str = "smart-home.json";
 type SavedSmartHome = Option<Vec<Home>>;
 
 pub struct CommandHandler<'a> {
-    output: Box<&'a mut dyn Write>,
+    output: &'a mut dyn Write,
 }
 
 impl<'a> CommandHandler<'a> {
-    pub fn new(output: Box<&'a mut dyn Write>) -> Self {
+    pub fn new(output: &'a mut dyn Write) -> Self {
         Self { output }
     }
 
@@ -130,7 +130,9 @@ impl<'a> CommandHandler<'a> {
             fs::write(file, content).expect("Unable write initial data");
             Ok(())
         } else {
-            Err(anyhow!("No repository found. Consider to init repository first"))
+            Err(anyhow!(
+                "No repository found. Consider to init repository first"
+            ))
         }
     }
 
@@ -186,9 +188,12 @@ impl<'a> CommandHandler<'a> {
                     }
                 }
                 None => {
-                    writeln!(self.output,
-                             "Smart home is not initialized. \
-                           Please create smart home instance first").unwrap();
+                    writeln!(
+                        self.output,
+                        "Smart home is not initialized. \
+                           Please create smart home instance first"
+                    )
+                    .unwrap();
                 }
             },
             Err(msg) => {
@@ -221,7 +226,9 @@ impl<'a> CommandHandler<'a> {
         if let Some(mut room) = self.find_room_by_device_id(device_id) {
             // It's safe to unwrap the result, because otherwise `find_room_by_device_id`
             // will return None
-            let device = room.devices.iter_mut()
+            let device = room
+                .devices
+                .iter_mut()
                 .find(|d| d.id() == device_id)
                 .unwrap();
 
@@ -244,16 +251,23 @@ impl<'a> CommandHandler<'a> {
                 home.rooms = new_rooms;
 
                 if let Err(msg) = self.update_home_state(home) {
-                    writeln!(self.output, "Unable to save changes: {}", msg)
-                        .unwrap();
+                    writeln!(self.output, "Unable to save changes: {}", msg).unwrap();
                 }
             } else {
-                writeln!(self.output, "Unable find associated home for room: {}", room.id)
-                    .unwrap();
+                writeln!(
+                    self.output,
+                    "Unable find associated home for room: {}",
+                    room.id
+                )
+                .unwrap();
             }
         } else {
-            writeln!(self.output, "Unable find associated room for device: {}", device_id)
-                .unwrap();
+            writeln!(
+                self.output,
+                "Unable find associated room for device: {}",
+                device_id
+            )
+            .unwrap();
         }
     }
 
@@ -266,35 +280,33 @@ impl<'a> CommandHandler<'a> {
                 if !enable {
                     return;
                 }
-                self.change_device_status(&device_id, enable);
+                self.change_device_status(device_id, enable);
             }
             (Some(disable), None) => {
                 if !disable {
                     return;
                 }
-                self.change_device_status(&device_id, !disable);
+                self.change_device_status(device_id, !disable);
             }
-            (_, _) => {
-                match self.read_smart_home_status() {
-                    Ok(state) => {
-                        if let Some(homes) = state {
-                            for home in homes {
-                                for room in home.rooms {
-                                    let mut devices = room.devices;
-                                    devices.retain(|d| d.id() == device_id);
+            (_, _) => match self.read_smart_home_status() {
+                Ok(state) => {
+                    if let Some(homes) = state {
+                        for home in homes {
+                            for room in home.rooms {
+                                let mut devices = room.devices;
+                                devices.retain(|d| d.id() == device_id);
 
-                                    for device in devices {
-                                        writeln!(self.output, "{}", device).unwrap();
-                                    }
+                                for device in devices {
+                                    writeln!(self.output, "{}", device).unwrap();
                                 }
                             }
                         }
                     }
-                    Err(msg) => {
-                        writeln!(self.output, "{}", msg).unwrap();
-                    }
                 }
-            }
+                Err(msg) => {
+                    writeln!(self.output, "{}", msg).unwrap();
+                }
+            },
         }
     }
 
@@ -306,7 +318,11 @@ impl<'a> CommandHandler<'a> {
                 StatusCommand::Device(command) => self.handle_device_status(command),
             }
         } else {
-            writeln!(self.output, "No repository found. Consider to init repository first").unwrap();
+            writeln!(
+                self.output,
+                "No repository found. Consider to init repository first"
+            )
+            .unwrap();
         }
     }
 
@@ -319,7 +335,7 @@ impl<'a> CommandHandler<'a> {
         } else {
             Home::build().with_name(&create_home.name).build()
         }
-            .expect("Unable create a home");
+        .expect("Unable create a home");
 
         if let Err(msg) = self.update_home_state(home) {
             writeln!(self.output, "Unable to save changes: {}", msg).unwrap();
@@ -336,7 +352,8 @@ impl<'a> CommandHandler<'a> {
                         .build()
                 } else {
                     Room::build().with_name(&room.name).build()
-                }.expect("Unable create a home");
+                }
+                .expect("Unable create a home");
 
                 home.rooms.push(new_room);
 
@@ -377,8 +394,9 @@ impl<'a> CommandHandler<'a> {
                 };
 
                 room.devices.push(device);
-                let mut home =
-                    self.find_home_by_room_id(&room.id).expect("Unable find home by room_id");
+                let mut home = self
+                    .find_home_by_room_id(&room.id)
+                    .expect("Unable find home by room_id");
 
                 let mut rooms: Vec<Room> = home
                     .rooms
@@ -473,16 +491,23 @@ impl<'a> CommandHandler<'a> {
                 home.rooms = new_rooms;
 
                 if let Err(msg) = self.update_home_state(home) {
-                    writeln!(self.output, "Unable to save changes: {}", msg)
-                        .unwrap();
+                    writeln!(self.output, "Unable to save changes: {}", msg).unwrap();
                 }
             } else {
-                writeln!(self.output, "Unable find associated home for room: {}", room.id)
-                    .unwrap();
+                writeln!(
+                    self.output,
+                    "Unable find associated home for room: {}",
+                    room.id
+                )
+                .unwrap();
             }
         } else {
-            writeln!(self.output, "Unable find associated room for device: {}", id)
-                .unwrap();
+            writeln!(
+                self.output,
+                "Unable find associated room for device: {}",
+                id
+            )
+            .unwrap();
         }
     }
 
@@ -558,10 +583,10 @@ impl<'a> CommandHandler<'a> {
             ServerCommand::Start(conf) => {
                 writeln!(self.output, "Starting server with {:?}", conf).unwrap();
 
-                let host = conf.host.unwrap_or("localhost".into());
+                let host = conf.host.unwrap_or_else(|| "localhost".into());
                 let port = conf.port.unwrap_or(0u16);
-                let current_dir = std::env::current_dir()
-                    .expect("Unable determine the current dir");
+                let current_dir =
+                    std::env::current_dir().expect("Unable determine the current dir");
 
                 TcpServer::start(host, port, current_dir);
             }

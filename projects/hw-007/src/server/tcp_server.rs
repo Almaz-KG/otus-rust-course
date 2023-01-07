@@ -1,7 +1,7 @@
-use std::net::TcpListener;
-use std::thread;
-use std::path::PathBuf;
 use crate::server::TcpSession;
+use std::net::TcpListener;
+use std::path::PathBuf;
+use std::thread;
 
 /// A TCP Server for smart home project. It allows to interact with the wide range of the clients
 /// by TCP connection. The internal logic of the connection is hidden by [TcpSession] struct.

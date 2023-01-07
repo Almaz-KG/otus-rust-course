@@ -29,7 +29,7 @@ impl Room {
 /// room
 impl Display for Room {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> FmtResult {
-        let devices_report: Vec<String> = self.devices.iter().map(|d| format!("{}", d.id())).collect();
+        let devices_report: Vec<String> = self.devices.iter().map(|d| d.id().to_string()).collect();
 
         let txt = format!(
             "Room: {},\nId: {},\nDescription: {}\nDevices: [{}]",

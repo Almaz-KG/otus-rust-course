@@ -16,13 +16,12 @@ pub enum SocketStatus {
 }
 
 impl SocketStatus {
-
     /// Invert the status of the device. If the device's status is [Enabled], toggle function will
     /// return [SocketStatus::Disabled] status, and vise versa.
     pub fn toggle(&self) -> Self {
         match self {
             SocketStatus::Enabled => SocketStatus::Disabled,
-            SocketStatus::Disabled => SocketStatus::Enabled
+            SocketStatus::Disabled => SocketStatus::Enabled,
         }
     }
 

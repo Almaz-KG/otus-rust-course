@@ -110,7 +110,7 @@ impl HomeBuilder {
     /// case, it should return a valid home instance
     ///
     /// ```
-    /// use hw_006::entities::house::HomeBuilder;
+    /// use hw_007::entities::house::HomeBuilder;
     /// let builder = HomeBuilder::default();
     /// let home = builder.build();
     ///

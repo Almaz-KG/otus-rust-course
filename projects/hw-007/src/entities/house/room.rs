@@ -88,7 +88,7 @@ impl RoomBuilder {
     /// case, it should return a valid home instance
     ///
     /// ```
-    /// use hw_006::entities::house::RoomBuilder;
+    /// use hw_007::entities::house::RoomBuilder;
     /// let builder = RoomBuilder::default();
     /// let room = builder.build();
     ///

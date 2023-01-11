@@ -1,7 +1,6 @@
 use crate::cli::*;
 use crate::entities::devices::*;
 use crate::entities::house::*;
-use crate::server::TcpServer;
 use anyhow::{anyhow, Result};
 use std::fs;
 use std::fs::File;
@@ -30,8 +29,23 @@ impl<'a> CommandHandler<'a> {
             Command::Remove(wrapper) => self.handle_remove_command(wrapper.command),
             Command::Measure(_) => {}
             Command::List(entity) => self.handle_list_command(entity.command),
-            Command::Server(wrapper) => self.handle_server_command(wrapper.command),
         }
+    }
+
+    fn write_response(&mut self, content: &str) -> Result<(), String> {
+        let bytes = content.as_bytes();
+        let len = bytes.len() as u32;
+
+        println!("B: {:?}", bytes);
+        println!("L: {:?}", len);
+
+        self.output
+            .write_all(&len.to_be_bytes())
+            .map_err(|_| "Unable to write response")?;
+        self.output
+            .write_all(bytes)
+            .map_err(|_| "Unable to write response")?;
+        Ok(())
     }
 
     fn get_repo_dir(&self) -> Result<PathBuf> {
@@ -164,7 +178,7 @@ impl<'a> CommandHandler<'a> {
         let path = current_dir.as_path();
 
         if !path.exists() {
-            writeln!(self.output, "Initializing a new repo").unwrap();
+            self.write_response("Initializing a new repo").unwrap();
             fs::create_dir(path).expect("Unable create repository");
 
             current_dir.push(SMART_HOME_FILE);
@@ -173,7 +187,7 @@ impl<'a> CommandHandler<'a> {
 
             fs::write(current_dir, content).expect("Unable write initial data");
         } else {
-            writeln!(self.output, "Repository already exists").unwrap();
+            self.write_response("Repository already exists").unwrap();
         }
     }
 
@@ -184,7 +198,7 @@ impl<'a> CommandHandler<'a> {
                     homes.retain(|h| h.id == id);
 
                     for home in homes {
-                        writeln!(self.output, "{}", home).unwrap();
+                        self.write_response(&format!("{}", home)).unwrap();
                     }
                 }
                 None => {
@@ -197,7 +211,7 @@ impl<'a> CommandHandler<'a> {
                 }
             },
             Err(msg) => {
-                writeln!(self.output, "{}", msg).unwrap();
+                self.write_response(&format!("{}", msg)).unwrap();
             }
         }
     }
@@ -217,7 +231,7 @@ impl<'a> CommandHandler<'a> {
                 }
             }
             Err(msg) => {
-                writeln!(self.output, "{}", msg).unwrap();
+                self.write_response(&format!("{}", msg)).unwrap();
             }
         }
     }
@@ -251,7 +265,8 @@ impl<'a> CommandHandler<'a> {
                 home.rooms = new_rooms;
 
                 if let Err(msg) = self.update_home_state(home) {
-                    writeln!(self.output, "Unable to save changes: {}", msg).unwrap();
+                    self.write_response(&format!("Unable to save changes: {}", msg))
+                        .unwrap();
                 }
             } else {
                 writeln!(
@@ -275,7 +290,7 @@ impl<'a> CommandHandler<'a> {
         let device_id = &command.device_id;
 
         match (command.disable, command.enable) {
-            (Some(_), Some(_)) => writeln!(self.output, "Wrong command parameters").unwrap(),
+            (Some(_), Some(_)) => self.write_response("Wrong command parameters").unwrap(),
             (None, Some(enable)) => {
                 if !enable {
                     return;
@@ -297,14 +312,14 @@ impl<'a> CommandHandler<'a> {
                                 devices.retain(|d| d.id() == device_id);
 
                                 for device in devices {
-                                    writeln!(self.output, "{}", device).unwrap();
+                                    self.write_response(&format!("{}", device)).unwrap();
                                 }
                             }
                         }
                     }
                 }
                 Err(msg) => {
-                    writeln!(self.output, "{}", msg).unwrap();
+                    self.write_response(&format!("{}", msg)).unwrap();
                 }
             },
         }
@@ -338,7 +353,8 @@ impl<'a> CommandHandler<'a> {
         .expect("Unable create a home");
 
         if let Err(msg) = self.update_home_state(home) {
-            writeln!(self.output, "Unable to save changes: {}", msg).unwrap();
+            self.write_response(&format!("Unable to save changes: {}", msg))
+                .unwrap();
         }
     }
 
@@ -358,11 +374,13 @@ impl<'a> CommandHandler<'a> {
                 home.rooms.push(new_room);
 
                 if let Err(msg) = self.update_home_state(home) {
-                    writeln!(self.output, "Unable to save changes: {}", msg).unwrap();
+                    self.write_response(&format!("Unable to save changes: {}", msg))
+                        .unwrap();
                 }
             }
             _ => {
-                writeln!(self.output, "Home with id: {} not found", room.home_id).unwrap();
+                self.write_response(&format!("Home with id: {} not found", room.home_id))
+                    .unwrap();
             }
         }
     }
@@ -409,11 +427,13 @@ impl<'a> CommandHandler<'a> {
                 home.rooms = rooms;
 
                 if let Err(msg) = self.update_home_state(home) {
-                    writeln!(self.output, "Unable to save changes: {}", msg).unwrap();
+                    self.write_response(&format!("Unable to save changes: {}", msg))
+                        .unwrap();
                 }
             }
             _ => {
-                writeln!(self.output, "Room with id: {} not found", &device.room_id).unwrap();
+                self.write_response(&format!("Room with id: {} not found", &device.room_id))
+                    .unwrap();
             }
         }
     }
@@ -435,12 +455,14 @@ impl<'a> CommandHandler<'a> {
                     let new_state: Vec<Home> = homes.into_iter().filter(|h| h.id != id).collect();
 
                     if let Err(msg) = self.update_state(Some(new_state)) {
-                        writeln!(self.output, "Unable to save changes: {}", msg).unwrap();
+                        self.write_response(&format!("Unable to save changes: {}", msg))
+                            .unwrap();
                     }
                 }
             }
             Err(msg) => {
-                writeln!(self.output, "Unable remove home: {}", msg).unwrap();
+                self.write_response(&format!("Unable remove home: {}", msg))
+                    .unwrap();
             }
         }
     }
@@ -463,13 +485,15 @@ impl<'a> CommandHandler<'a> {
                         new_state.push(home);
 
                         if let Err(msg) = self.update_state(Some(new_state)) {
-                            writeln!(self.output, "Unable to save changes: {}", msg).unwrap();
+                            self.write_response(&format!("Unable to save changes: {}", msg))
+                                .unwrap();
                         }
                     }
                 }
             }
             Err(msg) => {
-                writeln!(self.output, "Unable remove home: {}", msg).unwrap();
+                self.write_response(&format!("Unable remove home: {}", msg))
+                    .unwrap();
             }
         }
     }
@@ -491,7 +515,8 @@ impl<'a> CommandHandler<'a> {
                 home.rooms = new_rooms;
 
                 if let Err(msg) = self.update_home_state(home) {
-                    writeln!(self.output, "Unable to save changes: {}", msg).unwrap();
+                    self.write_response(&format!("Unable to save changes: {}", msg))
+                        .unwrap();
                 }
             } else {
                 writeln!(
@@ -522,18 +547,20 @@ impl<'a> CommandHandler<'a> {
     fn print_device_ids(&mut self) {
         match self.read_smart_home_status() {
             Ok(state) => {
+                let mut device_ids: Vec<String> = vec![];
                 if let Some(homes) = state {
                     for home in homes {
                         for room in home.rooms {
                             for device in room.devices {
-                                writeln!(self.output, "{}", device.id()).unwrap();
+                                device_ids.push(device.id().clone())
                             }
                         }
                     }
                 }
+                self.write_response(&device_ids.join("\n")).unwrap();
             }
             Err(msg) => {
-                writeln!(self.output, "{}", msg).unwrap();
+                self.write_response(&format!("{}", msg)).unwrap();
             }
         }
     }
@@ -541,16 +568,18 @@ impl<'a> CommandHandler<'a> {
     fn print_room_ids(&mut self) {
         match self.read_smart_home_status() {
             Ok(state) => {
+                let mut room_ids: Vec<String> = vec![];
                 if let Some(homes) = state {
                     for home in homes {
                         for room in home.rooms {
-                            writeln!(self.output, "{}", room.id).unwrap();
+                            room_ids.push(room.id)
                         }
                     }
                 }
+                self.write_response(&room_ids.join("\n")).unwrap();
             }
             Err(msg) => {
-                writeln!(self.output, "{}", msg).unwrap();
+                self.write_response(&format!("{}", msg)).unwrap();
             }
         }
     }
@@ -558,14 +587,16 @@ impl<'a> CommandHandler<'a> {
     fn print_home_ids(&mut self) {
         match self.read_smart_home_status() {
             Ok(state) => {
+                let mut home_ids: Vec<String> = vec![];
                 if let Some(homes) = state {
                     for home in homes {
-                        writeln!(self.output, "{}", home.id).unwrap();
+                        home_ids.push(home.id)
                     }
                 }
+                self.write_response(&home_ids.join("\n")).unwrap();
             }
             Err(msg) => {
-                writeln!(self.output, "{}", msg).unwrap();
+                self.write_response(&format!("{}", msg)).unwrap();
             }
         }
     }
@@ -575,21 +606,6 @@ impl<'a> CommandHandler<'a> {
             ListEntityCommand::Homes => self.print_home_ids(),
             ListEntityCommand::Rooms => self.print_room_ids(),
             ListEntityCommand::Devices => self.print_device_ids(),
-        }
-    }
-
-    fn handle_server_command(&mut self, command: ServerCommand) {
-        match command {
-            ServerCommand::Start(conf) => {
-                writeln!(self.output, "Starting server with {:?}", conf).unwrap();
-
-                let host = conf.host.unwrap_or_else(|| "localhost".into());
-                let port = conf.port.unwrap_or(0u16);
-                let current_dir =
-                    std::env::current_dir().expect("Unable determine the current dir");
-
-                TcpServer::start(host, port, current_dir);
-            }
         }
     }
 }

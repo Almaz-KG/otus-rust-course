@@ -1,7 +1,7 @@
-use std::io::{BufRead, Read, stdout, Write};
+use clap::Parser;
+use std::io::{stdout, BufRead, BufReader, Read, Write};
 use std::net::TcpStream;
 use std::time::Duration;
-use clap::Parser;
 
 struct TcpClient {
     host: String,
@@ -13,54 +13,77 @@ impl TcpClient {
         TcpClient { host, port }
     }
 
-    fn write_command_prompt(&self) -> Result<(), String> {
-        print!("-> ");
-        stdout().flush().map_err(|e| format!("Couldn't flush stdout: {:?}", e))?;
+    fn write_to_console(&self, content: &str) -> Result<(), String> {
+        if content.len() != 0 {
+            print!("{}", content);
+            if content.as_bytes()[content.len() - 1] != b'\n' {
+                print!("\n")
+            }
+            stdout()
+                .flush()
+                .map_err(|e| format!("Couldn't flush stdout: {:?}", e))?;
+        }
         Ok(())
     }
 
-    fn read_string(&self, socket: &mut TcpStream) -> Result<String, String> {
-        socket.set_read_timeout(Some(Duration::from_secs(3)))
-            .map_err(|e| format!("Unable to set read timeout: {:?}", e))?;
+    fn write_prompt(&self) -> Result<(), String> {
+        print!("->");
+        stdout()
+            .flush()
+            .map_err(|e| format!("Couldn't flush stdout: {:?}", e))?;
 
-        let mut received_data = String::new();
+        Ok(())
+    }
 
-        socket.read_to_string(&mut received_data)
-            .map_err(|e| format!("Error: {:?}", e))?;
-        println!("AAA");
 
-        Ok(received_data)
+    fn read_data(&self, socket: &mut TcpStream) -> Result<String, String> {
+        let mut reader = BufReader::new(socket);
+        let mut buf = [0; 4];
+        reader.read_exact(&mut buf).unwrap();
+        let len = u32::from_be_bytes(buf);
+
+        let mut buf = vec![0; len as _];
+        reader.read_exact(&mut buf).unwrap();
+        let result = String::from_utf8(buf).map_err(|e| e.to_string())?;
+
+        Ok(result)
     }
 
     fn write_data(&self, socket: &mut TcpStream, data: &[u8]) -> Result<(), String> {
-        socket.set_write_timeout(Some(Duration::from_secs(3)))
+        socket
+            .set_write_timeout(Some(Duration::from_secs(3)))
             .map_err(|e| format!("Unable to set write timeout: {:?}", e))?;
 
-        socket.write_all(data).map_err(|e| format!("Error: {:?}", e))?;
+        socket
+            .write_all(data)
+            .map_err(|e| format!("Error: {:?}", e))?;
         Ok(())
     }
 
     pub fn run(&self) -> Result<(), String> {
-        let mut tcp_socket = TcpStream::connect((self.host.clone(), self.port))
+        let mut stream = TcpStream::connect((self.host.clone(), self.port))
             .expect("Unable to connect to the host");
 
-        self.write_data(&mut tcp_socket, b"handshake")?;
-        let handshake = self.read_string(&mut tcp_socket)?;
+        self.write_data(&mut stream, b"handshake")?;
 
-        if handshake != "handshake" {
-            return Err(format!("Expected handshake message, but got {}", handshake).into());
+        let handshake = self.read_data(&mut stream)?;
+
+        if handshake.trim() != "handshake" {
+            return Err(format!("Expected handshake message, but got {}", handshake));
         }
 
-        println!("Connection established. \
+        println!(
+            "Connection established.\n \
                 Type --help to get detailed info. \
-                Type `exit` or `quit` to exit from the app");
+                Type `exit` or `quit` to exit from the app"
+        );
 
         let mut stdin = std::io::stdin().lock();
         let mut quit = false;
 
         while !quit {
             let mut command = String::new();
-            self.write_command_prompt()?;
+            self.write_prompt()?;
 
             stdin.read_line(&mut command).expect("Unable read command");
             let command = command.trim();
@@ -70,9 +93,9 @@ impl TcpClient {
                 continue;
             }
 
-            self.write_data(&mut tcp_socket, command.as_bytes())?;
-            let response = self.read_string(&mut tcp_socket)?;
-            println!("{}", response);
+            self.write_data(&mut stream, command.as_bytes())?;
+            let response = self.read_data(&mut stream)?;
+            self.write_to_console(&response)?;
         }
 
         Ok(())
@@ -83,11 +106,11 @@ impl TcpClient {
 #[command(author, version, about, long_about = None)]
 #[command(propagate_version = true)]
 pub struct ClientArgs {
-    /// The Server host to connect
+    /// The server host to connect
     #[arg(long, value_name = "host")]
     pub host: String,
 
-    /// The Server port int connect
+    /// The server port to connect
     #[arg(short = 'p', long)]
     pub port: u16,
 }
@@ -100,5 +123,7 @@ fn main() {
 
     let client = TcpClient::new(host, port);
     let result = client.run();
-    println!("{:?}", result)
+    if result.is_err() {
+        println!("[Client] Error: {}", result.err().unwrap())
+    }
 }

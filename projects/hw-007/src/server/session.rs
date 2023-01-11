@@ -21,7 +21,8 @@ use std::io::{Read, Write};
 use std::net::{Shutdown, TcpStream};
 use std::time::Duration;
 
-pub const DEFAULT_READ_WRITE_TIMEOUT_IN_SECS: Duration = Duration::from_secs(120);
+pub const DEFAULT_READ_TIMEOUT_IN_SECS: Duration = Duration::from_secs(u64::MAX);
+pub const DEFAULT_WRITE_TIMEOUT_IN_SECS: Duration = Duration::from_secs(10);
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum ConnectionStatus {
@@ -76,6 +77,10 @@ impl TcpSession {
 
         match self.stream.read(&mut buf) {
             Ok(size) => {
+                if size == 0 {
+                    return Err(anyhow!("No data provided"));
+                }
+
                 // need to delete new-line symbol at the end of the line
                 let last_index = if (buf[size - 1] as char) == '\n' {
                     size - 1
@@ -92,7 +97,10 @@ impl TcpSession {
     }
 
     fn write_data(&mut self, message: &str) {
-        self.stream.write_all(message.as_bytes()).unwrap()
+        let bytes = message.as_bytes();
+        let len = bytes.len() as u32;
+        self.stream.write_all(&len.to_be_bytes()).unwrap();
+        self.stream.write_all(bytes).unwrap();
     }
 
     fn close_connection(&mut self) {
@@ -129,16 +137,13 @@ impl TcpSession {
                 // FIXME: A dirty hack for clap crate. The first arg in args should be the script
                 // FIXME: name. So, in our case we should give some fake script name
                 let mut command_args = command.clone();
-                command_args.insert(0, "/fake_script_name".into());
+                command_args.insert(0, " ".into());
 
                 let args = CliArguments::try_parse_from(command_args);
 
                 match args {
                     Ok(args) => match &args.command {
                         Command::Init => self.write_data("Not supported command in remote mode\n"),
-                        Command::Server(_) => {
-                            self.write_data("Not supported command in remote mode\n")
-                        }
                         _ => {
                             let output = &mut self.stream;
                             let mut handler = CommandHandler::new(output);
@@ -157,8 +162,8 @@ impl TcpSession {
     }
 
     pub fn run(stream: TcpStream) -> Result<()> {
-        stream.set_read_timeout(Some(DEFAULT_READ_WRITE_TIMEOUT_IN_SECS))?;
-        stream.set_write_timeout(Some(DEFAULT_READ_WRITE_TIMEOUT_IN_SECS))?;
+        stream.set_read_timeout(Some(DEFAULT_READ_TIMEOUT_IN_SECS))?;
+        stream.set_write_timeout(Some(DEFAULT_WRITE_TIMEOUT_IN_SECS))?;
 
         let mut session = TcpSession {
             stream,
@@ -182,13 +187,15 @@ impl TcpSession {
         while !exit {
             match session.read_command() {
                 Ok(command) => {
+                    println!("[Server][Command] Received new command");
                     exit = session.handle_command(command);
+                    println!("[Server][Command] Command executed");
                 }
                 Err(msg) => {
-                    eprintln!("Unable read command: {}", msg);
                     return Err(anyhow!(format!("Unable read command: {}", msg)));
                 }
             }
+            session.print_state();
         }
 
         Ok(())

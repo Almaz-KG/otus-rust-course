@@ -1,29 +1,6 @@
 use clap::{Args, Parser, Subcommand, ValueEnum};
 
 #[derive(Args, Debug)]
-pub struct StartServerConf {
-    /// An optional server host. If no id provided it will be considered as localhost
-    #[arg(long, value_name = "host")]
-    pub host: Option<String>,
-
-    /// An optional server port. If no port provided it will be generated randomly
-    #[arg(short, long, value_name = "port")]
-    pub port: Option<u16>,
-}
-
-#[derive(Subcommand, Debug)]
-pub enum ServerCommand {
-    /// Start a new TCP server
-    Start(StartServerConf),
-}
-
-#[derive(Args, Debug)]
-pub struct ServerCommandWrapper {
-    #[command(subcommand)]
-    pub command: ServerCommand,
-}
-
-#[derive(Args, Debug)]
 pub struct MakeMeasure {
     /// Device id of the device where the measure will be proceeded
     #[arg(short, long, value_name = "device_id")]
@@ -200,9 +177,6 @@ pub enum Command {
 
     /// Request measurement for specific device in the home
     Measure(MakeMeasure),
-
-    /// TCP server for serving remove smart home features
-    Server(ServerCommandWrapper),
 }
 
 #[derive(Parser, Debug)]

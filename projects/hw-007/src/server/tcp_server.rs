@@ -9,7 +9,6 @@ use std::thread;
 pub struct TcpServer {
     host: String,
     port: u16,
-    repo: String,
 }
 
 impl TcpServer {
@@ -22,7 +21,11 @@ impl TcpServer {
             thread::spawn(move || {
                 let stream = stream.unwrap();
                 println!("[Server] Connected with {:?}", stream.local_addr().unwrap());
-                TcpSession::run(stream).unwrap();
+                let result = TcpSession::run(stream);
+                if result.is_err() {
+                    println!("[Server] Error: {}", result.err().unwrap())
+                }
+
                 println!("[Server] Connection closed")
             });
         }

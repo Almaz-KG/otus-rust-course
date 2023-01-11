@@ -20,3 +20,10 @@ pub mod cli;
 /// Tcp Server is implemented, but in the future home-works in might be adjusted with other
 /// servers as well.
 pub mod server;
+
+
+// A module which contains a client example for interacting with the server. This module is an
+// example of the possible interactions with Server side, and emulates the real clients, which
+// might be implemented by external developers. There is super dummy protocol, allowing interact
+// client and server. It was introduced without any intention of real use cases
+// pub mod client;

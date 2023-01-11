@@ -3,6 +3,14 @@ name = "hw-007"
 version = "0.1.0"
 edition = "2021"
 
+[[bin]]
+name = "client"
+path = "src/client/main.rs"
+
+[[bin]]
+name = "hw-007"
+path = "src/main.rs"
+
 [dependencies]
 rand = "0.8.5"
 clap = { version = "4.0.29", features = ["derive"] }

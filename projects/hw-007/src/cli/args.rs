@@ -3,7 +3,7 @@ use clap::{Args, Parser, Subcommand, ValueEnum};
 #[derive(Args, Debug)]
 pub struct MakeMeasure {
     /// Device id of the device where the measure will be proceeded
-    #[arg(short, long, value_name = "device_id")]
+    #[arg(short = 'i', long, value_name = "device_id")]
     pub device_id: String,
 }
 

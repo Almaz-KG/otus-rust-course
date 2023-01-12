@@ -51,16 +51,16 @@ impl Home {
 /// `description` (or empty string if it is None) and the full description of all children entities.
 impl Display for Home {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> FmtResult {
-        let rooms_report: Vec<String> = self.rooms.iter().map(|d| format!("{}", d)).collect();
+        let rooms: Vec<String> = self.rooms.iter().map(|r| r.id.clone()).collect();
 
         let txt = format!(
-            "House: {}\n,Id: {},\nDescription: {}\n\t {}",
+            "House: {},\nId: {},\nDescription: {},\nRooms: [{}]",
             self.name,
             self.id,
             self.description
                 .clone()
                 .unwrap_or_else(|| "[No description]".to_string()),
-            rooms_report.join("\n\t")
+            rooms.join(",")
         );
         write!(formatter, "{}", txt)
     }

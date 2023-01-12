@@ -24,6 +24,29 @@ use std::time::Duration;
 pub const DEFAULT_READ_TIMEOUT_IN_SECS: Duration = Duration::from_secs(u64::MAX);
 pub const DEFAULT_WRITE_TIMEOUT_IN_SECS: Duration = Duration::from_secs(10);
 
+struct Encoder<'a> {
+    writer: &'a mut dyn Write,
+}
+
+impl<'a> Encoder<'a> {
+    pub fn new(writer: &'a mut dyn Write) -> Self {
+        Self { writer }
+    }
+}
+
+impl<'a> Write for Encoder<'a> {
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        let len = buf.len() as u32;
+        self.writer.write_all(&len.to_be_bytes()).unwrap();
+        self.writer.write_all(buf).unwrap();
+        Ok(len as usize)
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        self.writer.flush()
+    }
+}
+
 #[derive(Debug, Eq, PartialEq)]
 pub enum ConnectionStatus {
     Connected,
@@ -145,8 +168,8 @@ impl TcpSession {
                     Ok(args) => match &args.command {
                         Command::Init => self.write_data("Not supported command in remote mode\n"),
                         _ => {
-                            let output = &mut self.stream;
-                            let mut handler = CommandHandler::new(output);
+                            let mut writer = Encoder::new(&mut self.stream);
+                            let mut handler = CommandHandler::new(&mut writer);
                             handler.process(args.command);
                         }
                     },

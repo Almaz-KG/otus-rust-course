@@ -1,6 +1,7 @@
 use crate::cli::*;
 use crate::entities::devices::*;
 use crate::entities::house::*;
+use crate::entities::Measure;
 use anyhow::{anyhow, Result};
 use std::fs;
 use std::fs::File;
@@ -27,21 +28,13 @@ impl<'a> CommandHandler<'a> {
             Command::Status(wrapper) => self.status(wrapper.command),
             Command::New(wrapper) => self.handle_new_command(wrapper.command),
             Command::Remove(wrapper) => self.handle_remove_command(wrapper.command),
-            Command::Measure(_) => {}
+            Command::Measure(wrapper) => self.handle_measure_command(&wrapper.device_id),
             Command::List(entity) => self.handle_list_command(entity.command),
         }
     }
 
     fn write_response(&mut self, content: &str) -> Result<(), String> {
         let bytes = content.as_bytes();
-        let len = bytes.len() as u32;
-
-        println!("B: {:?}", bytes);
-        println!("L: {:?}", len);
-
-        self.output
-            .write_all(&len.to_be_bytes())
-            .map_err(|_| "Unable to write response")?;
         self.output
             .write_all(bytes)
             .map_err(|_| "Unable to write response")?;
@@ -91,6 +84,22 @@ impl<'a> CommandHandler<'a> {
                     }
                 }
                 None
+            }),
+            Err(_) => None,
+        }
+    }
+
+    fn find_device_by_id(&self, id: &str) -> Option<Device> {
+        match self.read_smart_home_status() {
+            Ok(smart_home) => smart_home.and_then(|homes| {
+                let mut devices: Vec<Device> = vec![];
+                for home in homes.into_iter() {
+                    for mut room in home.rooms.into_iter() {
+                        devices.append(&mut room.devices)
+                    }
+                }
+
+                devices.into_iter().find(|d| d.id() == id)
             }),
             Err(_) => None,
         }
@@ -197,15 +206,18 @@ impl<'a> CommandHandler<'a> {
                 Some(mut homes) => {
                     homes.retain(|h| h.id == id);
 
-                    for home in homes {
-                        self.write_response(&format!("{}", home)).unwrap();
+                    if homes.is_empty() {
+                        self.write_response("Not found").unwrap()
+                    } else {
+                        for home in homes {
+                            self.write_response(&format!("{}", home)).unwrap();
+                        }
                     }
                 }
                 None => {
-                    writeln!(
-                        self.output,
+                    self.write_response(
                         "Smart home is not initialized. \
-                           Please create smart home instance first"
+                           Please create smart home instance first",
                     )
                     .unwrap();
                 }
@@ -220,13 +232,19 @@ impl<'a> CommandHandler<'a> {
         match self.read_smart_home_status() {
             Ok(state) => {
                 if let Some(homes) = state {
+                    let mut found = false;
                     for home in homes {
                         let mut rooms = home.rooms;
                         rooms.retain(|r| r.id == id);
 
                         for room in rooms {
-                            writeln!(self.output, "{}", room).unwrap();
+                            found = true;
+                            self.write_response(&format!("{}", room)).unwrap();
                         }
+                    }
+
+                    if !found {
+                        self.write_response("Not found").unwrap()
                     }
                 }
             }
@@ -252,6 +270,7 @@ impl<'a> CommandHandler<'a> {
                 }
                 Device::Thermometer(_) => {}
             }
+            self.write_response(device_id).unwrap();
 
             if let Some(mut home) = self.find_home_by_room_id(&room.id) {
                 let mut new_rooms: Vec<Room> = home
@@ -269,19 +288,17 @@ impl<'a> CommandHandler<'a> {
                         .unwrap();
                 }
             } else {
-                writeln!(
-                    self.output,
+                self.write_response(&format!(
                     "Unable find associated home for room: {}",
                     room.id
-                )
+                ))
                 .unwrap();
             }
         } else {
-            writeln!(
-                self.output,
+            self.write_response(&format!(
                 "Unable find associated room for device: {}",
                 device_id
-            )
+            ))
             .unwrap();
         }
     }
@@ -293,12 +310,14 @@ impl<'a> CommandHandler<'a> {
             (Some(_), Some(_)) => self.write_response("Wrong command parameters").unwrap(),
             (None, Some(enable)) => {
                 if !enable {
+                    self.write_response(device_id).unwrap();
                     return;
                 }
                 self.change_device_status(device_id, enable);
             }
             (Some(disable), None) => {
                 if !disable {
+                    self.write_response(device_id).unwrap();
                     return;
                 }
                 self.change_device_status(device_id, !disable);
@@ -306,15 +325,21 @@ impl<'a> CommandHandler<'a> {
             (_, _) => match self.read_smart_home_status() {
                 Ok(state) => {
                     if let Some(homes) = state {
+                        let mut found = false;
                         for home in homes {
                             for room in home.rooms {
                                 let mut devices = room.devices;
                                 devices.retain(|d| d.id() == device_id);
 
                                 for device in devices {
+                                    found = true;
                                     self.write_response(&format!("{}", device)).unwrap();
                                 }
                             }
+                        }
+
+                        if !found {
+                            self.write_response("Not found").unwrap()
                         }
                     }
                 }
@@ -333,11 +358,8 @@ impl<'a> CommandHandler<'a> {
                 StatusCommand::Device(command) => self.handle_device_status(command),
             }
         } else {
-            writeln!(
-                self.output,
-                "No repository found. Consider to init repository first"
-            )
-            .unwrap();
+            self.write_response("No repository found. Consider to init repository first")
+                .unwrap();
         }
     }
 
@@ -352,9 +374,12 @@ impl<'a> CommandHandler<'a> {
         }
         .expect("Unable create a home");
 
+        let id = home.id.clone();
         if let Err(msg) = self.update_home_state(home) {
             self.write_response(&format!("Unable to save changes: {}", msg))
                 .unwrap();
+        } else {
+            self.write_response(&id).unwrap();
         }
     }
 
@@ -370,12 +395,14 @@ impl<'a> CommandHandler<'a> {
                     Room::build().with_name(&room.name).build()
                 }
                 .expect("Unable create a home");
-
+                let id = new_room.id.clone();
                 home.rooms.push(new_room);
 
                 if let Err(msg) = self.update_home_state(home) {
                     self.write_response(&format!("Unable to save changes: {}", msg))
                         .unwrap();
+                } else {
+                    self.write_response(&id).unwrap();
                 }
             }
             _ => {
@@ -410,6 +437,7 @@ impl<'a> CommandHandler<'a> {
                     DeviceType::Socket => create_socket(&device),
                     DeviceType::Thermometer => create_thermometer(&device),
                 };
+                let id = device.id().clone();
 
                 room.devices.push(device);
                 let mut home = self
@@ -429,6 +457,8 @@ impl<'a> CommandHandler<'a> {
                 if let Err(msg) = self.update_home_state(home) {
                     self.write_response(&format!("Unable to save changes: {}", msg))
                         .unwrap();
+                } else {
+                    self.write_response(&id).unwrap();
                 }
             }
             _ => {
@@ -457,6 +487,8 @@ impl<'a> CommandHandler<'a> {
                     if let Err(msg) = self.update_state(Some(new_state)) {
                         self.write_response(&format!("Unable to save changes: {}", msg))
                             .unwrap();
+                    } else {
+                        self.write_response(id).unwrap();
                     }
                 }
             }
@@ -487,6 +519,8 @@ impl<'a> CommandHandler<'a> {
                         if let Err(msg) = self.update_state(Some(new_state)) {
                             self.write_response(&format!("Unable to save changes: {}", msg))
                                 .unwrap();
+                        } else {
+                            self.write_response(id).unwrap();
                         }
                     }
                 }
@@ -517,22 +551,19 @@ impl<'a> CommandHandler<'a> {
                 if let Err(msg) = self.update_home_state(home) {
                     self.write_response(&format!("Unable to save changes: {}", msg))
                         .unwrap();
+                } else {
+                    self.write_response(id).unwrap();
                 }
             } else {
-                writeln!(
-                    self.output,
+                self.write_response(&format!(
                     "Unable find associated home for room: {}",
                     room.id
-                )
+                ))
                 .unwrap();
             }
         } else {
-            writeln!(
-                self.output,
-                "Unable find associated room for device: {}",
-                id
-            )
-            .unwrap();
+            self.write_response(&format!("Unable find associated room for device: {}", id))
+                .unwrap();
         }
     }
 
@@ -541,6 +572,22 @@ impl<'a> CommandHandler<'a> {
             RemoveEntityCommand::Home(home) => self.remove_home_by_id(&home.id),
             RemoveEntityCommand::Room(room) => self.remove_room_by_id(&room.id),
             RemoveEntityCommand::Device(device) => self.remove_device_by_id(&device.id),
+        }
+    }
+
+    fn handle_measure_command(&mut self, device_id: &str) {
+        match self.find_device_by_id(device_id) {
+            None => self.write_response("Not found").unwrap(),
+            Some(device) => match device {
+                Device::Socket(_) => self.write_response("Not supported").unwrap(),
+                Device::Thermometer(th) => match th.measure() {
+                    Ok(measurement) => match measurement {
+                        None => self.write_response("None").unwrap(),
+                        Some(v) => self.write_response(&v.to_string()).unwrap(),
+                    },
+                    Err(msg) => self.write_response(&format!("{}", msg)).unwrap(),
+                },
+            },
         }
     }
 

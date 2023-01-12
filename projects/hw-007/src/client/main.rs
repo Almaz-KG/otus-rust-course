@@ -14,10 +14,10 @@ impl TcpClient {
     }
 
     fn write_to_console(&self, content: &str) -> Result<(), String> {
-        if content.len() != 0 {
+        if !content.is_empty() {
             print!("{}", content);
             if content.as_bytes()[content.len() - 1] != b'\n' {
-                print!("\n")
+                println!();
             }
             stdout()
                 .flush()
@@ -34,7 +34,6 @@ impl TcpClient {
 
         Ok(())
     }
-
 
     fn read_data(&self, socket: &mut TcpStream) -> Result<String, String> {
         let mut reader = BufReader::new(socket);

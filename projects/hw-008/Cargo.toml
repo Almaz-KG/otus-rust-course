@@ -1,0 +1,27 @@
+[package]
+name = "hw-008"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "server"
+path = "src/server/main.rs"
+
+[[bin]]
+name = "client"
+path = "src/client/main.rs"
+
+[[bin]]
+name = "hw-007"
+path = "src/main.rs"
+
+[dependencies]
+rand = "0.8.5"
+clap = { version = "4.0.29", features = ["derive"] }
+serde = "^1.0.0"
+serde_derive = "^1.0.0"
+serde_json = "1.0"
+anyhow = "1.0.68"
+tui = "0.19"
+crossterm = "0.25"
+unicode-width = "0.1"

@@ -1,5 +1,6 @@
 use super::socket::Socket;
 use super::thermometer::Thermometer;
+use crate::entities::devices::DeviceId;
 use crate::entities::{ReportError, Reportable};
 use serde_derive::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter, Result as FmtResult};
@@ -30,7 +31,7 @@ pub enum Device {
 }
 
 impl Device {
-    pub fn id(&self) -> &String {
+    pub fn id(&self) -> &DeviceId {
         match self {
             Device::Socket(socket) => &socket.id,
             Device::Thermometer(ther) => &ther.id,

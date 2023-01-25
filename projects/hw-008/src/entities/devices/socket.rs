@@ -1,3 +1,4 @@
+use crate::entities::devices::DeviceId;
 use crate::entities::generate_id;
 use crate::entities::reportable::{ReportError, Reportable};
 use serde_derive::{Deserialize, Serialize};
@@ -51,7 +52,7 @@ impl Display for SocketStatus {
 /// `status`. I guess, there is no need to write it down the meaning of these additional fields
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Socket {
-    pub id: String,
+    pub id: DeviceId,
     pub name: String,
     pub description: Option<String>,
     pub power_consumption: f32,

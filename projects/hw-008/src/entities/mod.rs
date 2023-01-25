@@ -35,3 +35,7 @@ pub(crate) fn generate_id(r#type: &str) -> String {
 
     format!("{}_{}", r#type, id)
 }
+
+/// A manager submodule for storing management traits and structs for dealing with smart home.
+/// The [SmartHomeManager] should be the single entry point for the whole system.
+pub mod manager;

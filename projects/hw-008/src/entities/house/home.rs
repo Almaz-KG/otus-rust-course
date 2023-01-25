@@ -5,13 +5,15 @@ use crate::entities::{generate_id, ReportError};
 use serde_derive::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter, Result as FmtResult};
 
+pub type HomeId = String;
+
 /// A [Home] struct represents the Smart House wrapper. Each home must contain a `name`, an
 /// optional `description`, and a list of the [Room]s. All these nested fields of the struct
 /// might be used for the reporting purpose. As for now, all these fields are used for full
 /// reporting, and the only `name` field is used for short reporting.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Home {
-    pub id: String,
+    pub id: HomeId,
     pub name: String,
     pub description: Option<String>,
     pub rooms: Vec<Room>,

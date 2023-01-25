@@ -17,15 +17,14 @@ pub struct ServerArgs {
 fn main() {
     let args = ServerArgs::parse();
 
-    println!("Starting server with {:?}", args);
+    println!("Starting servers with {:?}", args);
 
     let host = args.host.unwrap_or_else(|| "localhost".into());
     let port = args.port.unwrap_or(0u16);
     let current_dir = std::env::current_dir().expect("Unable determine the current dir");
 
     let tcp_server = TcpServer::start(host.clone(), port, current_dir);
-    println!("A");
-    UdpServer::start(host.clone(), port + 1, vec![]);
-    println!("B");
+    let _udp_server = UdpServer::start(host, port + 1, vec![]);
+
     tcp_server.join().unwrap()
 }

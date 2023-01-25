@@ -14,3 +14,7 @@ pub use thermometer::Thermometer;
 /// but in the future it may have more.
 mod device;
 pub use device::Device;
+
+pub type DeviceId = String;
+
+pub type DeviceStatus = bool;

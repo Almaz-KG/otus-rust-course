@@ -1,7 +1,8 @@
-mod session;
-mod tcp_server;
-mod udp_server;
+mod tcp;
+mod udp;
 
-pub use session::*;
-pub use tcp_server::*;
-pub use udp_server::*;
+/// A package for storing TCP server related structs and logics
+pub use tcp::*;
+
+/// A package for storing UDP server related structs and logics
+pub use udp::*;

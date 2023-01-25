@@ -1,3 +1,4 @@
+use crate::entities::devices::DeviceId;
 use crate::entities::reportable::{ReportError, Reportable};
 use crate::entities::{generate_id, Measure, MeasureError};
 use serde_derive::{Deserialize, Serialize};
@@ -8,7 +9,7 @@ use std::fmt::{Display, Formatter, Result as FmtResult};
 /// states and functionality. As for now, it's just a dummy thermometer
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Thermometer {
-    pub id: String,
+    pub id: DeviceId,
     pub name: String,
     pub description: Option<String>,
 }

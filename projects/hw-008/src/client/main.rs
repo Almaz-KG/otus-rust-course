@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use clap::Parser;
 use std::io::{stdout, BufRead, BufReader, Read, Write};
 use std::net::TcpStream;
@@ -255,7 +257,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
                 Constraint::Length(3),
                 Constraint::Min(1),
             ]
-                .as_ref(),
+            .as_ref(),
         )
         .split(f.size());
 
@@ -295,7 +297,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
     f.render_widget(input, chunks[1]);
     match app.input_mode {
         InputMode::Normal =>
-        // Hide the cursor. `Frame` does this by default, so we don't need to do anything here
+            // Hide the cursor. `Frame` does this by default, so we don't need to do anything here
             {}
 
         InputMode::Editing => {

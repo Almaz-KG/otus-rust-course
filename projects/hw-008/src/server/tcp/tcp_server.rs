@@ -13,12 +13,12 @@ pub struct TcpServer {
 }
 
 impl TcpServer {
-    pub fn start(host: String, port: u16, _repo: PathBuf) -> JoinHandle<()>{
+    pub fn start(host: String, port: u16, _repo: PathBuf) -> JoinHandle<()> {
         let listener = TcpListener::bind((host, port)).unwrap();
         let addr = listener.local_addr().unwrap();
 
         thread::spawn(move || {
-            println!("Running server on {}", addr);
+            println!("Running Tcp server on {}", addr);
 
             for stream in listener.incoming() {
                 thread::spawn(move || {
@@ -31,7 +31,7 @@ impl TcpServer {
 
                     println!("[Server] Connection closed")
                 });
-            };
+            }
         })
     }
 }

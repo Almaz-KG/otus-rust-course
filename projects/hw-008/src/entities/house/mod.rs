@@ -9,5 +9,5 @@ mod home;
 /// user, but I'm not sure about it.
 mod room;
 
-pub use home::{Home, HomeBuilder};
-pub use room::{Room, RoomBuilder};
+pub use home::{Home, HomeBuilder, HomeId};
+pub use room::{Room, RoomBuilder, RoomId};

@@ -4,12 +4,14 @@ use crate::entities::reportable::{ReportError, Reportable};
 use serde_derive::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter, Result as FmtResult};
 
+pub type RoomId = String;
+
 /// A [Room] entity represents a room in the Home. The home might have many rooms. Each room
 /// instance represents with the `name`, `description` and the list of the devices located in the
 /// room.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Room {
-    pub id: String,
+    pub id: RoomId,
     pub name: String,
     pub description: Option<String>,
     pub devices: Vec<Device>,

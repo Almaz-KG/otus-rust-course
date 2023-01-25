@@ -16,6 +16,7 @@
 use crate::cli::{Arguments as CliArguments, Command, CommandHandler};
 use anyhow::{anyhow, Result};
 use clap::Parser;
+use std::env;
 use std::fmt::{Display, Formatter};
 use std::io::{Read, Write};
 use std::net::{Shutdown, TcpStream};
@@ -169,7 +170,8 @@ impl TcpSession {
                         Command::Init => self.write_data("Not supported command in remote mode\n"),
                         _ => {
                             let mut writer = Encoder::new(&mut self.stream);
-                            let mut handler = CommandHandler::new(&mut writer);
+                            let path = env::current_dir().unwrap();
+                            let mut handler = CommandHandler::new(&mut writer, path);
                             handler.process(args.command);
                         }
                     },

@@ -1,3 +1,4 @@
+use std::borrow::{Borrow, BorrowMut};
 use std::error::Error;
 use std::io;
 use std::sync::{Arc, Mutex};
@@ -13,12 +14,12 @@ use tui::backend::{Backend, CrosstermBackend};
 use tui::layout::{Constraint, Direction, Layout};
 use tui::style::{Color, Modifier, Style};
 use tui::text::{Span, Spans, Text};
-use tui::widgets::{Block, Borders, Paragraph};
+use tui::widgets::{Block, Borders, Paragraph, TableState};
 use tui::widgets::{Cell, List, ListItem, Row, Table};
 use tui::{Frame, Terminal};
 use unicode_width::UnicodeWidthStr;
 
-use crate::app::ApplicationState;
+use crate::app::{ApplicationState, SelectedTable};
 use crate::clients::TcpClient;
 use crate::clients::UdpClient;
 use crate::commands::ClientCommand;
@@ -74,7 +75,7 @@ fn run_app<B: Backend>(
                     KeyCode::Enter => {
                         let command = app.current_command.clone();
                         app.current_command.clear();
-                        app.commands.push(command.clone());
+                        app.executed_commands.push(command.clone());
                         commands_sender.send(ClientCommand::ExecuteCommand(command)).unwrap()
                     }
                     KeyCode::Char(c) => {
@@ -84,9 +85,28 @@ fn run_app<B: Backend>(
                         app.current_command.pop();
                     }
                     KeyCode::Tab => {
-                        commands_sender.send(ClientCommand::ExecuteCommand("TAB".to_string())).unwrap()
+                        let selected = app.current_selected_table;
+                        app.current_selected_table = selected.next();
                     }
                     KeyCode::Esc => return Ok(()),
+                    KeyCode::Down => {
+                        app.highlight_next();
+                        let event_type = match app.current_selected_table {
+                            SelectedTable::Homes => ClientCommand::GetHomeInfo,
+                            SelectedTable::Rooms => ClientCommand::GetRoomInfo,
+                            SelectedTable::Devices => ClientCommand::GetDeviceInfo,
+                        };
+                        commands_sender.send(event_type).unwrap();
+                    }
+                    KeyCode::Up => {
+                        app.highlight_previous();
+                        let event_type = match app.current_selected_table {
+                            SelectedTable::Homes => ClientCommand::GetHomeInfo,
+                            SelectedTable::Rooms => ClientCommand::GetRoomInfo,
+                            SelectedTable::Devices => ClientCommand::GetDeviceInfo,
+                        };
+                        commands_sender.send(event_type).unwrap();
+                    },
                     _ => {}
                 }
             }
@@ -143,9 +163,11 @@ fn draw<B: Backend>(f: &mut Frame<B>, app_lock: Arc<Mutex<ApplicationState>>) {
         Span::styled("ESC", Style::default().add_modifier(Modifier::BOLD)),
         Span::raw(" to exit, "),
         Span::styled("TAB", Style::default().add_modifier(Modifier::BOLD)),
-        Span::raw(" to move on entity tables"),
+        Span::raw(" to move on entity tables, "),
         Span::styled("help", Style::default().add_modifier(Modifier::BOLD)),
-        Span::raw(" to print help information"),
+        Span::raw(" to print help information, "),
+        Span::styled("UP (↑) / DOWN (↓)", Style::default().add_modifier(Modifier::BOLD)),
+        Span::raw(" to select element from the table "),
     ];
     let text = Text::from(Spans::from(msg));
     let help_message = Paragraph::new(text);
@@ -164,18 +186,27 @@ fn draw<B: Backend>(f: &mut Frame<B>, app_lock: Arc<Mutex<ApplicationState>>) {
         )
         .split(chunks[1]);
 
-    let app = app_lock.lock().unwrap();
+    let mut app = app_lock.lock().unwrap();
+    let homes_list = app.homes.clone();
+    let rooms_list = app.rooms.clone();
+    let devices_list = app.devices.clone();
+    let last_info = app.last_info.clone();
 
-    let homes = build_table_widget("Homes", &app.homes);
-    let rooms = build_table_widget("Rooms", &app.rooms);
-    let devices = build_table_widget("Devices", &app.devices);
-    let device_info = &app.get_device_info();
-    let info = build_table_widget("Infos", device_info);
+    let homes = build_table_widget("Homes", &homes_list);
+    let rooms = build_table_widget("Rooms", &rooms_list);
+    let devices = build_table_widget("Devices", &devices_list);
+    let status = build_table_widget("Status", &last_info);
 
-    f.render_widget(homes, tables[0]);
-    f.render_widget(rooms, tables[1]);
-    f.render_widget(devices, tables[2]);
-    f.render_widget(info, tables[3]);
+    let home_select_state = app.homes_table_select_state.borrow_mut();
+    f.render_stateful_widget(homes, tables[0], home_select_state);
+
+    let room_select_state = app.rooms_table_select_state.borrow_mut();
+    f.render_stateful_widget(rooms, tables[1], room_select_state);
+
+    let device_select_state = app.devices_table_select_state.borrow_mut();
+    f.render_stateful_widget(devices, tables[2], device_select_state);
+
+    f.render_widget(status, tables[3]);
 
     let interaction = Layout::default()
         .direction(Direction::Horizontal)
@@ -198,7 +229,7 @@ fn draw<B: Backend>(f: &mut Frame<B>, app_lock: Arc<Mutex<ApplicationState>>) {
         )
         .split(interaction[0]);
 
-    let commands = build_tui_list_widget("Commands", &app.commands);
+    let commands = build_tui_list_widget("Commands", &app.executed_commands);
     f.render_widget(commands, commands_layout[0]);
 
     let input = Paragraph::new(app.current_command.clone())
@@ -212,6 +243,6 @@ fn draw<B: Backend>(f: &mut Frame<B>, app_lock: Arc<Mutex<ApplicationState>>) {
         // Move one line down, from the border to the input line
         commands_layout[1].y + 1);
 
-    let responses = build_tui_list_widget("Responses", &app.last_result);
+    let responses = build_tui_list_widget("Responses", &app.last_response);
     f.render_widget(responses, interaction[1]);
 }

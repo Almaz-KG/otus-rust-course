@@ -3,6 +3,7 @@ mod clients;
 mod tui_gui;
 mod commands;
 mod tui_example;
+mod tui_example_table;
 
 use std::sync::{Arc, mpsc, Mutex};
 use std::thread;
@@ -48,4 +49,6 @@ fn main() {
     sender.send(ClientCommand::GetAllDevices).unwrap();
 
     tui_gui::run(app_state_lock.clone(), sender).unwrap();
+
+    // tui_example_table::run();
 }

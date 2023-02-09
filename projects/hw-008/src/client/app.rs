@@ -4,11 +4,11 @@ use crate::TcpClient;
 pub struct App {
     tcp_client: TcpClient,
     udp_client: UdpClient,
-    commands: Vec<String>,
-    last_result: Vec<String>,
-    homes: Vec<String>,
-    rooms: Vec<String>,
-    devices: Vec<String>,
+    pub commands: Vec<String>,
+    pub last_result: Vec<String>,
+    pub homes: Vec<String>,
+    pub rooms: Vec<String>,
+    pub devices: Vec<String>,
 }
 
 impl App {
@@ -28,4 +28,9 @@ impl App {
         // let value = self.data.pop().unwrap();
         // self.data.insert(0, value);
     }
+
+    pub fn get_device_info(&self) -> Vec<String>{
+        vec!["TEST DATA".to_string()]
+    }
+
 }

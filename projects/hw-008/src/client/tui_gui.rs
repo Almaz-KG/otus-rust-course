@@ -76,7 +76,7 @@ fn run_app<B: Backend>(
     }
 }
 
-fn build_table_widget(name: &str, values: Vec<String>) -> Table {
+fn build_table_widget<'a>(name: &'a str, values: &'a Vec<String>) -> Table<'a> {
     let selected_style = Style::default().add_modifier(Modifier::REVERSED);
 
     let rows = values.iter().map(|item| {
@@ -94,6 +94,19 @@ fn build_table_widget(name: &str, values: Vec<String>) -> Table {
             Constraint::Length(30),
             Constraint::Min(10),
         ])
+}
+
+fn build_tui_list_widget<'a>(name: &'a str, values: &'a Vec<String>) -> List<'a> {
+    let responses: Vec<ListItem> = values
+        .iter()
+        .enumerate()
+        .map(|(i, m)| {
+            let content = vec![Spans::from(Span::raw(format!("{}: {}", i, m)))];
+            ListItem::new(content)
+        })
+        .collect();
+
+    List::new(responses).block(Block::default().borders(Borders::ALL).title(name))
 }
 
 fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
@@ -115,10 +128,11 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
         )
         .split(chunks[0]);
 
-    let homes = build_table_widget("Homes", vec!["Home1".to_string()]);
-    let rooms = build_table_widget("Rooms", vec!["Room1".to_string()]);
-    let devices = build_table_widget("Devices", vec!["Device 1".to_string()]);
-    let info = build_table_widget("Infos", vec!["Info 1".to_string()]);
+    let homes = build_table_widget("Homes", &app.homes);
+    let rooms = build_table_widget("Rooms", &app.rooms);
+    let devices = build_table_widget("Devices", &app.devices);
+    let device_info = &app.get_device_info();
+    let info = build_table_widget("Infos", device_info);
 
     f.render_widget(homes, tables[0]);
     f.render_widget(rooms, tables[1]);
@@ -136,29 +150,9 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
         )
         .split(chunks[1]);
 
-    let commands: Vec<ListItem> = vec!["AAAA"]
-        .iter()
-        .enumerate()
-        .map(|(i, m)| {
-            let content = vec![Spans::from(Span::raw(format!("{}: {}", i, m)))];
-            ListItem::new(content)
-        })
-        .collect();
-    let commands =
-        List::new(commands).block(Block::default().borders(Borders::ALL).title("Commands"));
-
-    let responses: Vec<ListItem> = vec!["BBBB"]
-        .iter()
-        .enumerate()
-        .map(|(i, m)| {
-            let content = vec![Spans::from(Span::raw(format!("{}: {}", i, m)))];
-            ListItem::new(content)
-        })
-        .collect();
-    let responses =
-        List::new(responses).block(Block::default().borders(Borders::ALL).title("Responses"));
+    let commands = build_tui_list_widget("Commands", &app.commands);
+    let responses = build_tui_list_widget("Responses", &app.last_result);
 
     f.render_widget(commands, interaction[0]);
     f.render_widget(responses, interaction[1]);
-    // f.render_widget(commands, interaction[1]);
 }

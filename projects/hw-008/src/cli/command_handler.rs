@@ -6,8 +6,6 @@ use anyhow::Result;
 use crate::cli::*;
 use crate::entities::manager::*;
 
-const REPO_DIR: &str = ".smart-home";
-
 pub struct CommandHandler<'a> {
     output: &'a mut dyn Write,
     smart_home_manager: SmartHomeManager,
@@ -45,8 +43,7 @@ impl<'a> CommandHandler<'a> {
     fn initialize_smart_home(&mut self) {
         self.write_response("Initializing a new repo").unwrap();
 
-        let mut current_dir = std::env::current_dir().expect("Unable determine the current dir");
-        current_dir.push(REPO_DIR);
+        let current_dir = env::current_dir().expect("Unable determine the current dir");
         let path = current_dir.as_path();
 
         if !path.exists() {
@@ -265,6 +262,7 @@ impl<'a> CommandHandler<'a> {
     }
 
     fn print_home_ids(&mut self) {
+        println!("AAAAA");
         match self.smart_home_manager.list_all_homes() {
             Ok(homes) => {
                 for home in homes {

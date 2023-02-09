@@ -12,6 +12,9 @@ use crate::entities::Measure;
 
 const SMART_HOME_FILE: &str = "smart-home.json";
 
+const REPO_DIR: &str = ".smart-home";
+
+
 pub(crate) type SavedSmartHome = Option<Vec<Home>>;
 
 pub struct SmartHomeManager {
@@ -28,6 +31,7 @@ impl SmartHomeManager {
             fs::create_dir(self.path.clone()).expect("Unable create repository");
 
             let mut path = self.path.clone();
+            path.push(REPO_DIR);
             path.push(SMART_HOME_FILE);
 
             let init: SavedSmartHome = None;
@@ -45,6 +49,7 @@ impl SmartHomeManager {
 
     pub fn get_state_file(&self) -> Result<PathBuf> {
         let mut current_dir = self.path.clone();
+        current_dir.push(REPO_DIR);
         current_dir.push(SMART_HOME_FILE);
         Ok(current_dir)
     }
@@ -54,10 +59,16 @@ impl SmartHomeManager {
     }
 
     pub fn read_smart_home_status(&self) -> Result<SavedSmartHome> {
+        println!("AAAAAC");
         let mut current_dir = self.path.clone();
+        println!("{:?}", current_dir);
+
+        current_dir.push(REPO_DIR);
         current_dir.push(SMART_HOME_FILE);
 
         let path = current_dir.as_path();
+        println!("{:?}", path);
+
         let file = File::open(path)?;
         let reader = BufReader::new(file);
 
@@ -121,6 +132,7 @@ impl SmartHomeManager {
     }
 
     pub fn list_all_homes(&self) -> Result<Vec<Home>> {
+        println!("AAAAAB");
         match self.read_smart_home_status() {
             Ok(state) => match state {
                 None => Ok(vec![]),

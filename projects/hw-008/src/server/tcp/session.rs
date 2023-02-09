@@ -135,10 +135,10 @@ impl TcpSession {
 
     fn make_handshake(&mut self) {
         let line = self.read_line();
-
         let status = match line {
             Ok(line) => {
-                if line == "handshake" {
+                println!("Handshake input: {}", line.trim());
+                if line.trim() == "handshake" {
                     self.write_data("handshake\n");
                     ConnectionStatus::Handshaked
                 } else {

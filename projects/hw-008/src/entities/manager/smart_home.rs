@@ -59,13 +59,11 @@ impl SmartHomeManager {
 
     pub fn read_smart_home_status(&self) -> Result<SavedSmartHome> {
         let mut current_dir = self.path.clone();
-        println!("{:?}", current_dir);
 
         current_dir.push(REPO_DIR);
         current_dir.push(SMART_HOME_FILE);
 
         let path = current_dir.as_path();
-        println!("{:?}", path);
 
         let file = File::open(path)?;
         let reader = BufReader::new(file);

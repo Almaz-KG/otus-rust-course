@@ -40,6 +40,8 @@ impl<'a> Write for Encoder<'a> {
         let len = buf.len() as u32;
         self.writer.write_all(&len.to_be_bytes()).unwrap();
         self.writer.write_all(buf).unwrap();
+
+        println!("SERVER WROTE: {:?}", String::from_utf8(buf.to_vec()).map_err(|e| e.to_string()).unwrap());
         Ok(len as usize)
     }
 
@@ -137,7 +139,6 @@ impl TcpSession {
         let line = self.read_line();
         let status = match line {
             Ok(line) => {
-                println!("Handshake input: {}", line.trim());
                 if line.trim() == "handshake" {
                     self.write_data("handshake\n");
                     ConnectionStatus::Handshaked

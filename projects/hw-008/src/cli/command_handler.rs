@@ -242,9 +242,13 @@ impl<'a> CommandHandler<'a> {
     fn print_device_ids(&mut self) {
         match self.smart_home_manager.list_all_devices() {
             Ok(devices) => {
-                for device in devices {
-                    self.write_response(&format!("{}\n", device.id())).unwrap();
-                }
+                let ids: Vec<String> = devices
+                    .iter()
+                    .map(|d| format!("{}", d.id()))
+                    .collect();
+
+                let response = ids.join("\n");
+                self.write_response(&response).unwrap();
             }
             Err(msg) => self.write_response(&format!("{}", msg)).unwrap(),
         }
@@ -253,9 +257,13 @@ impl<'a> CommandHandler<'a> {
     fn print_room_ids(&mut self) {
         match self.smart_home_manager.list_all_rooms() {
             Ok(rooms) => {
-                for room in rooms {
-                    self.write_response(&format!("{}\n", room.id)).unwrap();
-                }
+                let ids: Vec<String> = rooms
+                    .iter()
+                    .map(|r| format!("{}", r.id))
+                    .collect();
+
+                let response = ids.join("\n");
+                self.write_response(&response).unwrap();
             }
             Err(msg) => self.write_response(&format!("{}", msg)).unwrap(),
         }
@@ -264,9 +272,13 @@ impl<'a> CommandHandler<'a> {
     fn print_home_ids(&mut self) {
         match self.smart_home_manager.list_all_homes() {
             Ok(homes) => {
-                for home in homes {
-                    self.write_response(&format!("{}\n", home.id)).unwrap();
-                }
+                let ids: Vec<String> = homes
+                    .iter()
+                    .map(|h| format!("{}", h.id))
+                    .collect();
+
+                let response = ids.join("\n");
+                self.write_response(&response).unwrap();
             }
             Err(msg) => self.write_response(&format!("{}", msg)).unwrap(),
         }

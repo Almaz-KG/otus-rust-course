@@ -74,6 +74,7 @@ fn run_app<B: Backend>(
                     KeyCode::Enter => {
                         let command = app.current_command.clone();
                         app.current_command.clear();
+                        app.commands.push(command.clone());
                         commands_sender.send(ClientCommand::ExecuteCommand(command)).unwrap()
                     }
                     KeyCode::Char(c) => {

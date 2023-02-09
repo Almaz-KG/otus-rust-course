@@ -14,7 +14,6 @@ const SMART_HOME_FILE: &str = "smart-home.json";
 
 const REPO_DIR: &str = ".smart-home";
 
-
 pub(crate) type SavedSmartHome = Option<Vec<Home>>;
 
 pub struct SmartHomeManager {

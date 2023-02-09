@@ -58,7 +58,6 @@ impl SmartHomeManager {
     }
 
     pub fn read_smart_home_status(&self) -> Result<SavedSmartHome> {
-        println!("AAAAAC");
         let mut current_dir = self.path.clone();
         println!("{:?}", current_dir);
 
@@ -131,7 +130,6 @@ impl SmartHomeManager {
     }
 
     pub fn list_all_homes(&self) -> Result<Vec<Home>> {
-        println!("AAAAAB");
         match self.read_smart_home_status() {
             Ok(state) => match state {
                 None => Ok(vec![]),

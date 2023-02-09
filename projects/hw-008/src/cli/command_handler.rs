@@ -262,7 +262,6 @@ impl<'a> CommandHandler<'a> {
     }
 
     fn print_home_ids(&mut self) {
-        println!("AAAAA");
         match self.smart_home_manager.list_all_homes() {
             Ok(homes) => {
                 for home in homes {

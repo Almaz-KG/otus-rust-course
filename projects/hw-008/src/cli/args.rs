@@ -101,7 +101,7 @@ pub enum DeviceStatusAction {
 
 #[derive(Args, Debug)]
 pub struct DeviceStatusCommand {
-    /// The id of the entity to be deleted
+    /// The id of the entity to be displayed
     #[arg(short = 'i', long, value_name = "id")]
     pub device_id: String,
 

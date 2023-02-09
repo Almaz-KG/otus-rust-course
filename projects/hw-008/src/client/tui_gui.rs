@@ -1,5 +1,7 @@
 use std::error::Error;
 use std::io;
+use std::sync::{Arc, Mutex};
+use std::sync::mpsc::Sender;
 use std::time::{Duration, Instant};
 
 use crossterm::event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode};
@@ -10,16 +12,19 @@ use crossterm::terminal::{
 use tui::backend::{Backend, CrosstermBackend};
 use tui::layout::{Constraint, Direction, Layout};
 use tui::style::{Color, Modifier, Style};
-use tui::text::{Span, Spans};
-use tui::widgets::{Block, Borders};
+use tui::text::{Span, Spans, Text};
+use tui::widgets::{Block, Borders, Paragraph};
 use tui::widgets::{Cell, List, ListItem, Row, Table};
 use tui::{Frame, Terminal};
+use unicode_width::UnicodeWidthStr;
 
-use crate::app::App;
+use crate::app::ApplicationState;
 use crate::clients::TcpClient;
 use crate::clients::UdpClient;
+use crate::commands::ClientCommand;
 
-pub fn run(tcp_client: TcpClient, udp_client: UdpClient) -> Result<(), Box<dyn Error>> {
+pub fn run(application_state: Arc<Mutex<ApplicationState>>,
+           commands_sender: Sender<ClientCommand>) -> Result<(), Box<dyn Error>> {
     // setup terminal
     enable_raw_mode()?;
     let mut stdout = io::stdout();
@@ -29,8 +34,7 @@ pub fn run(tcp_client: TcpClient, udp_client: UdpClient) -> Result<(), Box<dyn E
 
     // create app and run it
     let tick_rate = Duration::from_millis(500);
-    let app = App::new(tcp_client, udp_client);
-    let result = run_app(&mut terminal, app, tick_rate);
+    let result = run_app(&mut terminal, application_state, commands_sender, tick_rate);
 
     // restore terminal
     disable_raw_mode()?;
@@ -50,12 +54,13 @@ pub fn run(tcp_client: TcpClient, udp_client: UdpClient) -> Result<(), Box<dyn E
 
 fn run_app<B: Backend>(
     terminal: &mut Terminal<B>,
-    mut app: App,
+    app: Arc<Mutex<ApplicationState>>,
+    commands_sender: Sender<ClientCommand>,
     tick_rate: Duration,
 ) -> io::Result<()> {
     let mut last_tick = Instant::now();
     loop {
-        terminal.draw(|f| ui(f, &app))?;
+        terminal.draw(|f| draw(f, app.clone()))?;
 
         let timeout = tick_rate
             .checked_sub(last_tick.elapsed())
@@ -63,14 +68,30 @@ fn run_app<B: Backend>(
 
         if event::poll(timeout)? {
             if let Event::Key(key) = event::read()? {
-                if let KeyCode::Char('q') = key.code {
-                    return Ok(());
+                let mut app = app.lock().unwrap();
+
+                match key.code {
+                    KeyCode::Enter => {
+                        let command = app.current_command.clone();
+                        app.current_command.clear();
+                        commands_sender.send(ClientCommand::ExecuteCommand(command)).unwrap()
+                    }
+                    KeyCode::Char(c) => {
+                        app.current_command.push(c);
+                    }
+                    KeyCode::Backspace => {
+                        app.current_command.pop();
+                    }
+                    KeyCode::Tab => {
+                        commands_sender.send(ClientCommand::ExecuteCommand("TAB".to_string())).unwrap()
+                    }
+                    KeyCode::Esc => return Ok(()),
+                    _ => {}
                 }
             }
         }
 
         if last_tick.elapsed() >= tick_rate {
-            app.on_tick();
             last_tick = Instant::now();
         }
     }
@@ -99,9 +120,8 @@ fn build_table_widget<'a>(name: &'a str, values: &'a Vec<String>) -> Table<'a> {
 fn build_tui_list_widget<'a>(name: &'a str, values: &'a Vec<String>) -> List<'a> {
     let responses: Vec<ListItem> = values
         .iter()
-        .enumerate()
-        .map(|(i, m)| {
-            let content = vec![Spans::from(Span::raw(format!("{}: {}", i, m)))];
+        .map(|line| {
+            let content = vec![Spans::from(Span::raw(line))];
             ListItem::new(content)
         })
         .collect();
@@ -109,11 +129,25 @@ fn build_tui_list_widget<'a>(name: &'a str, values: &'a Vec<String>) -> List<'a>
     List::new(responses).block(Block::default().borders(Borders::ALL).title(name))
 }
 
-fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
+fn draw<B: Backend>(f: &mut Frame<B>, app_lock: Arc<Mutex<ApplicationState>>) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([Constraint::Percentage(30), Constraint::Percentage(70)].as_ref())
+        .constraints([
+            Constraint::Percentage(3),
+            Constraint::Percentage(37),
+            Constraint::Percentage(60)].as_ref())
         .split(f.size());
+
+    let msg = vec![
+        Span::raw("Press "),
+        Span::styled("ESC", Style::default().add_modifier(Modifier::BOLD)),
+        Span::raw(" to exit, "),
+        Span::styled("TAB", Style::default().add_modifier(Modifier::BOLD)),
+        Span::raw(" to move on entity tables"),
+    ];
+    let text = Text::from(Spans::from(msg));
+    let help_message = Paragraph::new(text);
+    f.render_widget(help_message, chunks[0]);
 
     let tables = Layout::default()
         .direction(Direction::Horizontal)
@@ -126,7 +160,9 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
             ]
             .as_ref(),
         )
-        .split(chunks[0]);
+        .split(chunks[1]);
+
+    let app = app_lock.lock().unwrap();
 
     let homes = build_table_widget("Homes", &app.homes);
     let rooms = build_table_widget("Rooms", &app.rooms);
@@ -148,11 +184,32 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
             ]
             .as_ref(),
         )
-        .split(chunks[1]);
+        .split(chunks[2]);
+
+    let commands_layout = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints(
+            [
+                Constraint::Percentage(90), // Commands log
+                Constraint::Percentage(10), // Commands input
+            ].as_ref(),
+        )
+        .split(interaction[0]);
 
     let commands = build_tui_list_widget("Commands", &app.commands);
-    let responses = build_tui_list_widget("Responses", &app.last_result);
+    f.render_widget(commands, commands_layout[0]);
 
-    f.render_widget(commands, interaction[0]);
+    let input = Paragraph::new(app.current_command.clone())
+        .style(Style::default().fg(Color::Yellow))
+        .block(Block::default().borders(Borders::ALL).title("Input"));
+
+    f.render_widget(input, commands_layout[1]);
+    f.set_cursor(
+        // Put cursor past the end of the input text
+        commands_layout[1].x + app.current_command.width() as u16 + 1,
+        // Move one line down, from the border to the input line
+        commands_layout[1].y + 1);
+
+    let responses = build_tui_list_widget("Responses", &app.last_result);
     f.render_widget(responses, interaction[1]);
 }

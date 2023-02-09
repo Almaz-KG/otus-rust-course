@@ -102,9 +102,8 @@ fn build_table_widget<'a>(name: &'a str, values: &'a Vec<String>) -> Table<'a> {
     let selected_style = Style::default().add_modifier(Modifier::REVERSED);
 
     let rows = values.iter().map(|item| {
-        let height = item.chars().filter(|c| *c == '\n').count() + 1;
         let cells = Cell::from(item.clone());
-        Row::new(vec![cells]).height(height as u16).bottom_margin(1)
+        Row::new(vec![cells])
     });
 
     Table::new(rows)
@@ -145,6 +144,8 @@ fn draw<B: Backend>(f: &mut Frame<B>, app_lock: Arc<Mutex<ApplicationState>>) {
         Span::raw(" to exit, "),
         Span::styled("TAB", Style::default().add_modifier(Modifier::BOLD)),
         Span::raw(" to move on entity tables"),
+        Span::styled("help", Style::default().add_modifier(Modifier::BOLD)),
+        Span::raw(" to print help information"),
     ];
     let text = Text::from(Spans::from(msg));
     let help_message = Paragraph::new(text);

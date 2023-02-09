@@ -1,6 +1,7 @@
 use std::sync::{Arc, Mutex, MutexGuard};
 use std::sync::mpsc::Receiver;
 use std::thread;
+use clap::builder::Str;
 use crate::clients::UdpClient;
 use crate::commands::ClientCommand;
 use crate::{ServerResponse, TcpClient};
@@ -56,14 +57,37 @@ impl ApplicationStateUpdater {
 
             loop {
                 if let Ok(command) = self.events_receiver.recv() {
-                    let app_state = self.app_state.lock().unwrap();
+                    let mut app_state = self.app_state.lock().unwrap();
 
                     match command {
-                        ClientCommand::GetHomeInfo(_) => {}
-                        ClientCommand::GetRoomInfo(_) => {}
-                        ClientCommand::GetDeviceInfo(_) => {}
+                        ClientCommand::GetAllHomes => {
+                            let homes = ApplicationStateUpdater::handle_execute_command
+                                ("list homes".to_string(), &mut app_state);
+                            app_state.homes = homes;
+                        },
+                        ClientCommand::GetAllRooms => {
+                            let rooms = ApplicationStateUpdater::handle_execute_command
+                                ("list rooms".to_string(), &mut app_state);
+                            app_state.rooms = rooms;
+                        },
+                        ClientCommand::GetAllDevices => {
+                            let devices = ApplicationStateUpdater::handle_execute_command
+                                ("list devices".to_string(), &mut app_state);
+                            app_state.devices = devices;
+                        },
+
+                        ClientCommand::GetHomeInfo(id) => {
+                            ApplicationStateUpdater::get_info("home", id, app_state);
+                        }
+                        ClientCommand::GetRoomInfo(id) => {
+                            ApplicationStateUpdater::get_info("room", id, app_state);
+                        }
+                        ClientCommand::GetDeviceInfo(id) => {
+                            ApplicationStateUpdater::get_info("device", id, app_state);
+                        }
                         ClientCommand::ExecuteCommand(cmd) => {
-                            ApplicationStateUpdater::handle_execute_command(cmd, app_state);
+                            app_state.last_result =
+                                ApplicationStateUpdater::handle_execute_command(cmd, &mut app_state);
                         }
                     }
                 }
@@ -71,17 +95,35 @@ impl ApplicationStateUpdater {
         });
     }
 
-    fn handle_execute_command(command: String, app_state: MutexGuard<ApplicationState>) {
+    fn handle_execute_command(command: String,
+                              app_state: &mut MutexGuard<ApplicationState>) -> Vec<String> {
         let mut state = app_state;
         let result = state.tcp_client.command(command);
 
-        state.last_result = result
+        result
             .map(|msg| {msg
                 .split("\n")
                 .map(|s| s.to_string())
                 .collect::<Vec<String>>()})
             .map_err(|e| vec![format!("Error: {}", e)])
-            .unwrap();
+            .unwrap()
+    }
+
+    fn get_all_info(entity_type: &str, app_state: MutexGuard<ApplicationState>) {
+        // let mut state = app_state;
+        // let result = state.tcp_client.
+        //
+        // state.last_result = result
+        //     .map(|msg| {msg
+        //         .split("\n")
+        //         .map(|s| s.to_string())
+        //         .collect::<Vec<String>>()})
+        //     .map_err(|e| vec![format!("Error: {}", e)])
+        //     .unwrap();
+    }
+
+    fn get_info(entity_type: &str, entity_id: String, app_state: MutexGuard<ApplicationState>) {
+        todo!()
     }
 
 }

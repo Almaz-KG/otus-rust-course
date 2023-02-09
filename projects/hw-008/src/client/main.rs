@@ -43,7 +43,9 @@ fn main() {
         app_state_lock.clone(), receiver);
     application_state_updater.start();
 
-    tui_gui::run(app_state_lock.clone(), sender).unwrap();
+    sender.send(ClientCommand::GetAllHomes).unwrap();
+    sender.send(ClientCommand::GetAllRooms).unwrap();
+    sender.send(ClientCommand::GetAllDevices).unwrap();
 
-    // tui_example::run();
+    tui_gui::run(app_state_lock.clone(), sender).unwrap();
 }

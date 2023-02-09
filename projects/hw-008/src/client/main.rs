@@ -24,8 +24,8 @@ fn main() {
     let host = args.host;
     let port = args.port;
 
-    println!("Connecting to: {} {}", host, port);
     let tcp_client = TcpClient::new(host.clone(), port);
     let udp_client = UdpClient::new(host.clone(), port);
+    println!("Connecting to: {} {}", host, port);
     tui_gui::run(tcp_client, udp_client).unwrap();
 }

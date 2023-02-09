@@ -95,7 +95,7 @@ impl UdpServer {
                         devices,
                         active_connections: vec![],
                     };
-                    let addr = socket.local_addr().unwrap().clone();
+                    let addr = socket.local_addr().unwrap();
                     let server = Arc::new(Mutex::new(server));
                     UdpServer::listen(server.clone(), socket);
                     UdpServer::send_updates(server);

@@ -76,32 +76,17 @@ fn run_app<B: Backend>(
     }
 }
 
-fn build_homes_table<'a>(app: &'a App) -> Table<'a> {
+fn build_table_widget(name: &str, values: Vec<String>) -> Table {
     let selected_style = Style::default().add_modifier(Modifier::REVERSED);
-    let normal_style = Style::default().bg(Color::Blue);
-    let header_cells = ["Homes"]
-        .iter()
-        .map(|h| Cell::from(*h).style(Style::default().fg(Color::Red)));
-    let header = Row::new(header_cells)
-        .style(normal_style)
-        .height(1)
-        .bottom_margin(1);
 
-    let values = vec![vec!["AAA".to_string()]];
     let rows = values.iter().map(|item| {
-        let height = item
-            .iter()
-            .map(|content| content.chars().filter(|c| *c == '\n').count())
-            .max()
-            .unwrap_or(0)
-            + 1;
-        let cells = item.iter().map(|c| Cell::from(c.clone()));
-        Row::new(cells).height(height as u16).bottom_margin(1)
+        let height = item.chars().filter(|c| *c == '\n').count() + 1;
+        let cells = Cell::from(item.clone());
+        Row::new(vec![cells]).height(height as u16).bottom_margin(1)
     });
 
     Table::new(rows)
-        .header(header)
-        .block(Block::default().title("Homes").borders(Borders::ALL))
+        .block(Block::default().title(name).borders(Borders::ALL))
         .highlight_style(selected_style)
         .highlight_symbol(">> ")
         .widths(&[
@@ -130,10 +115,10 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
         )
         .split(chunks[0]);
 
-    let homes = build_homes_table(app);
-    let rooms = build_homes_table(app);
-    let devices = build_homes_table(app);
-    let info = build_homes_table(app);
+    let homes = build_table_widget("Homes", vec!["Home1".to_string()]);
+    let rooms = build_table_widget("Rooms", vec!["Room1".to_string()]);
+    let devices = build_table_widget("Devices", vec!["Device 1".to_string()]);
+    let info = build_table_widget("Infos", vec!["Info 1".to_string()]);
 
     f.render_widget(homes, tables[0]);
     f.render_widget(rooms, tables[1]);
@@ -144,8 +129,8 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
         .direction(Direction::Horizontal)
         .constraints(
             [
-                Constraint::Percentage(30), // Command input
-                Constraint::Percentage(70), // Results output
+                Constraint::Percentage(40), // Command input
+                Constraint::Percentage(60), // Results output
             ]
             .as_ref(),
         )

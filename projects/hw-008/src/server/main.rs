@@ -23,8 +23,8 @@ fn main() {
     let port = args.port.unwrap_or(0u16);
     let current_dir = std::env::current_dir().expect("Unable determine the current dir");
 
-    let tcp_server = TcpServer::start(host.clone(), port, current_dir);
-    let _udp_server = UdpServer::start(host, port + 1, vec![]);
+    let tcp_server = TcpServer::start(host.clone(), port);
+    UdpServer::start(host, port + 1, current_dir);
 
     tcp_server.join().unwrap()
 }

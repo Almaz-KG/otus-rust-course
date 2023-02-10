@@ -1,111 +1,100 @@
 use crate::entities::devices::Device;
 use crate::entities::Measure;
 use std::net::{SocketAddr, UdpSocket};
+use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::thread;
-use std::thread::JoinHandle;
 use std::time::Duration;
+use crate::entities::manager::SmartHomeManager;
+
+pub const SEND_INTERVAL: u64 = 2;
 
 /// An Udp Server which serves for the devices which might use UDP protocol.
 #[allow(unused)]
 pub struct UdpServer {
-    host: String,
-    port: u16,
-    devices: Vec<Device>,
-    active_connections: Vec<SocketAddr>,
+    active_connections: Mutex<Vec<SocketAddr>>,
+    socket: Mutex<UdpSocket>,
+    manager: SmartHomeManager
 }
 
 impl UdpServer {
-    fn listen(server: Arc<Mutex<UdpServer>>, socket: UdpSocket) {
+    fn listen(server: Arc<UdpServer>) {
         thread::spawn(move || {
-            let mut buf: [u8; 20] = [0; 20];
-            let mut result: Vec<u8> = Vec::new();
-            match socket.recv_from(&mut buf) {
-                Ok((number_of_bytes, src_addr)) => {
-                    result = Vec::from(&buf[0..number_of_bytes]);
-                    let mut server = server.lock().unwrap();
-                    server.active_connections.push(src_addr);
-                }
-                Err(fail) => println!("failed listening {:?}", fail),
-            }
+            loop {
+                let mut buf: [u8; 20] = [0; 20];
+                let socket = server.socket.lock().unwrap();
 
-            let display_result = result;
-            let result_str = String::from_utf8(display_result).unwrap();
-            println!("received message: {:?}", result_str);
+                match socket.recv_from(&mut buf) {
+                    Ok((_, src_addr)) => {
+                        println!("[UdpServer] Connection from {}", src_addr);
+                        server.active_connections.lock().unwrap().push(src_addr);
+                    }
+                    Err(_) => {
+                        drop(socket);
+                        thread::sleep(Duration::from_secs(SEND_INTERVAL));
+                    },
+                }
+            }
         });
     }
 
-    fn send_datagram(addr: &SocketAddr, value: &str) -> Result<usize, String> {
-        let content = value.as_bytes();
-        let host = format!("{}:{}", addr.ip(), addr.port());
 
-        let socket = UdpSocket::bind(host).unwrap();
-        socket
-            .set_write_timeout(Some(Duration::from_secs(2)))
-            .unwrap();
-        socket.send(content).map_err(|e| format!("{}", e))
-    }
-
-    fn send_updates(server: Arc<Mutex<UdpServer>>) {
+    fn send_updates(server: Arc<UdpServer>) {
         let _thread = thread::spawn(move || {
             loop {
-                let mut server = server.lock().unwrap();
+                let devices = server.manager.list_all_devices().unwrap();
+                let connections = server.active_connections.lock().unwrap();
 
-                let mut dropped_connections = vec![];
+                if devices.is_empty() || connections.is_empty() {
+                    thread::sleep(Duration::from_secs(SEND_INTERVAL));
+                    drop(connections);
+                    continue
+                }
 
-                for device in server.devices.iter() {
+                for device in devices.iter() {
                     match device {
                         Device::Socket(_) => {}
                         Device::Thermometer(therm) => {
-                            for addr in server.active_connections.iter() {
+                            let socket = server.socket.lock().unwrap();
+                            for addr in connections.iter() {
                                 let id = therm.id.clone();
                                 let value = therm.measure().unwrap().unwrap();
-                                let measure = format!("{}|{}", id, value);
-                                let send_r = UdpServer::send_datagram(addr, &measure);
+                                let measure = format!("[{}]: {}\n", id, value);
 
-                                match send_r {
-                                    Ok(_) => {} // do nothing
-                                    Err(_) => {
-                                        // remove from the list of active connections
-                                        dropped_connections.push(addr);
-                                    }
-                                }
+                                socket.send_to(measure.as_bytes(), addr).unwrap();
                             }
                         }
                     }
                 }
-                let mut connections = server.active_connections.clone();
-                connections.retain(|ac| dropped_connections.iter().any(|c| ac == *c));
-
-                server.active_connections = connections;
-
-                thread::sleep(Duration::from_secs(2))
+                drop(connections);
+                thread::sleep(Duration::from_secs(SEND_INTERVAL));
             }
         });
     }
 
-    pub fn start(host: String, port: u16, devices: Vec<Device>) -> JoinHandle<()> {
-        thread::spawn(move || {
-            let udp_socket_result = UdpSocket::bind((host.clone(), port));
-            match udp_socket_result {
-                Ok(socket) => {
-                    let server = UdpServer {
-                        host,
-                        port,
-                        devices,
-                        active_connections: vec![],
-                    };
-                    let addr = socket.local_addr().unwrap();
-                    let server = Arc::new(Mutex::new(server));
-                    UdpServer::listen(server.clone(), socket);
-                    UdpServer::send_updates(server);
+    pub fn start(host: String, port: u16, repo: PathBuf) {
+        let udp_socket_result = UdpSocket::bind((host, port));
+        match udp_socket_result {
+            Ok(socket) => {
+                let addr = socket.local_addr().unwrap();
+                let manager = SmartHomeManager::new(repo);
+                socket.set_nonblocking(true).unwrap();
 
-                    println!("Running Udp server on {}", addr);
-                }
-                Err(_) => {
-                    eprintln!("Unable to start Udp Server...")
-                }
+                let server = UdpServer {
+                    socket: Mutex::new(socket),
+                    active_connections: Mutex::new(vec![]),
+                    manager,
+                };
+
+                let server = Arc::new(server);
+                UdpServer::listen(server.clone());
+                UdpServer::send_updates(server);
+
+                println!("Running Udp server on {}", addr);
             }
-        })
+            Err(_) => {
+                eprintln!("Unable to start Udp Server...")
+            }
+        };
     }
 }

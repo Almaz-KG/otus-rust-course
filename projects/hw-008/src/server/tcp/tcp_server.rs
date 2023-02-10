@@ -1,6 +1,5 @@
 use crate::server::TcpSession;
 use std::net::TcpListener;
-use std::path::PathBuf;
 use std::thread;
 use std::thread::JoinHandle;
 
@@ -13,7 +12,7 @@ pub struct TcpServer {
 }
 
 impl TcpServer {
-    pub fn start(host: String, port: u16, _repo: PathBuf) -> JoinHandle<()> {
+    pub fn start(host: String, port: u16) -> JoinHandle<()> {
         let listener = TcpListener::bind((host, port)).unwrap();
         let addr = listener.local_addr().unwrap();
 

@@ -171,16 +171,16 @@ impl Cli {
     }
 
     fn get_repo_dir() -> Result<PathBuf, String> {
-        let mut current_dir = std::env::current_dir()
-            .map_err(|e| format!("Unable determine the current dir {e}"))?;
+        let mut current_dir =
+            std::env::current_dir().map_err(|e| format!("Unable determine the current dir {e}"))?;
 
         current_dir.push(REPO_DIR);
         Ok(current_dir)
     }
 
     fn get_state_file() -> Result<PathBuf, String> {
-        let mut current_dir = std::env::current_dir()
-            .map_err(|e| format!("Unable determine the current dir {e}"))?;
+        let mut current_dir =
+            std::env::current_dir().map_err(|e| format!("Unable determine the current dir {e}"))?;
 
         current_dir.push(REPO_DIR);
         current_dir.push(SMART_HOME_FILE);

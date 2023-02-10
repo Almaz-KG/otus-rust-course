@@ -45,9 +45,7 @@ impl Display for MeasureError {
             MeasureError::MeasurementError(msg) => {
                 formatter.write_str(&format!("MeasurementError: {msg}"))
             }
-            MeasureError::UnknownError(msg) => {
-                formatter.write_str(&format!("UnknownError: {msg}"))
-            }
+            MeasureError::UnknownError(msg) => formatter.write_str(&format!("UnknownError: {msg}")),
         }
     }
 }

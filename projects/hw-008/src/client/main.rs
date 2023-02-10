@@ -41,9 +41,5 @@ fn main() {
     let udp_state_updater = UdpStateUpdater::new(app_state_lock.clone());
     udp_state_updater.start();
 
-    sender.send(ClientCommand::GetAllHomes).unwrap();
-    sender.send(ClientCommand::GetAllRooms).unwrap();
-    sender.send(ClientCommand::GetAllDevices).unwrap();
-
-    // tui_gui::run(app_state_lock, sender).unwrap();
+    tui_gui::run(app_state_lock, sender).unwrap();
 }

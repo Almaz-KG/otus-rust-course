@@ -3,7 +3,6 @@ use std::sync::mpsc::Receiver;
 use std::sync::{Arc, Mutex, MutexGuard};
 use std::thread;
 use std::time::Duration;
-use clap::builder::Str;
 
 use crate::clients::UdpClient;
 use crate::commands::ClientCommand;
@@ -252,7 +251,9 @@ pub struct UdpStateUpdater {
 }
 
 impl UdpStateUpdater {
-    pub fn new(app_state: Arc<Mutex<ApplicationState>>) -> Self { Self { app_state } }
+    pub fn new(app_state: Arc<Mutex<ApplicationState>>) -> Self {
+        Self { app_state }
+    }
 
     pub fn start(self) {
         thread::spawn(move || {
@@ -262,28 +263,28 @@ impl UdpStateUpdater {
 
             loop {
                 let mut app_state = self.app_state.lock().unwrap();
-                let mut udp_client = &mut app_state.udp_client;
-                match udp_client.read_data() {
-                    Ok(msgs) => {
-                        if !msgs.is_empty() {
-                            let msrmts = app_state
-                                .last_udp_measurements
-                                .clone()
-                                .into_iter()
-                                .chain(msgs)
-                                .rev()
-                                .take(100)
-                                .collect::<Vec<String>>();
+                let udp_client = &mut app_state.udp_client;
 
-                            app_state.last_udp_measurements = msrmts;
-                        }
+                if let Ok(msgs) = udp_client.read_data() {
+                    if !msgs.is_empty() {
+                        let mut msrmts = app_state
+                            .last_udp_measurements
+                            .clone()
+                            .into_iter()
+                            .chain(msgs)
+                            .rev()
+                            .take(100)
+                            .collect::<Vec<String>>();
+
+                        msrmts.retain(|s| !s.is_empty());
+                        msrmts.sort();
+
+                        app_state.last_udp_measurements = msrmts;
                     }
-                    Err(_) => {} // Ignore error case
                 };
                 drop(app_state);
                 thread::sleep(Duration::from_secs(2));
             }
-        }).join().unwrap();
+        });
     }
 }
-

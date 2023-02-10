@@ -52,6 +52,12 @@ pub fn run(
     Ok(())
 }
 
+fn update_info(commands_sender: &Sender<ClientCommand>) {
+    commands_sender.send(ClientCommand::GetAllHomes).unwrap();
+    commands_sender.send(ClientCommand::GetAllRooms).unwrap();
+    commands_sender.send(ClientCommand::GetAllDevices).unwrap();
+}
+
 fn run_app<B: Backend>(
     terminal: &mut Terminal<B>,
     app: Arc<Mutex<ApplicationState>>,
@@ -59,6 +65,11 @@ fn run_app<B: Backend>(
     tick_rate: Duration,
 ) -> io::Result<()> {
     let mut last_tick = Instant::now();
+    update_info(&commands_sender);
+    commands_sender
+        .send(ClientCommand::ExecuteCommand("help".to_string()))
+        .unwrap();
+
     loop {
         terminal.draw(|f| draw(f, app.clone()))?;
 
@@ -77,7 +88,8 @@ fn run_app<B: Backend>(
                         app.executed_commands.push(command.clone());
                         commands_sender
                             .send(ClientCommand::ExecuteCommand(command))
-                            .unwrap()
+                            .unwrap();
+                        update_info(&commands_sender);
                     }
                     KeyCode::Char(c) => {
                         app.current_command.push(c);
@@ -188,7 +200,7 @@ fn draw<B: Backend>(f: &mut Frame<B>, app_lock: Arc<Mutex<ApplicationState>>) {
                 Constraint::Percentage(25), // Homes table
                 Constraint::Percentage(25), // Rooms table
                 Constraint::Percentage(25), // Device table
-                Constraint::Percentage(25), // Info table
+                Constraint::Percentage(25), // Status table
             ]
             .as_ref(),
         )
@@ -221,7 +233,8 @@ fn draw<B: Backend>(f: &mut Frame<B>, app_lock: Arc<Mutex<ApplicationState>>) {
         .constraints(
             [
                 Constraint::Percentage(40), // Command input
-                Constraint::Percentage(60), // Results output
+                Constraint::Percentage(30), // Results output
+                Constraint::Percentage(30), // Udp server outputs
             ]
             .as_ref(),
         )
@@ -254,5 +267,7 @@ fn draw<B: Backend>(f: &mut Frame<B>, app_lock: Arc<Mutex<ApplicationState>>) {
     );
 
     let responses = build_tui_list_widget("Responses", &app.last_response);
+    let udp_server = build_tui_list_widget("Udp server", &app.last_udp_measurements);
     f.render_widget(responses, interaction[1]);
+    f.render_widget(udp_server, interaction[2]);
 }

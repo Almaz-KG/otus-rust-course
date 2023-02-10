@@ -1,6 +1,7 @@
 use crate::entities::devices::Device;
 use crate::entities::manager::SmartHomeManager;
 use crate::entities::Measure;
+use chrono::Utc;
 use std::net::{SocketAddr, UdpSocket};
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
@@ -55,7 +56,7 @@ impl UdpServer {
                         for addr in connections.iter() {
                             let id = therm.id.clone();
                             let value = therm.measure().unwrap().unwrap();
-                            let measure = format!("[{}]: {}\n", id, value);
+                            let measure = format!("[{}][{}]: {}\n", Utc::now(), id, value);
 
                             socket.send_to(measure.as_bytes(), addr).unwrap();
                         }

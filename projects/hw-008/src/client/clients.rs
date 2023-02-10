@@ -84,18 +84,20 @@ pub struct UdpClient {
 
 impl UdpClient {
     pub fn new(host: String, port: u16) -> Self {
-        UdpClient { host, port, connection: None }
+        UdpClient {
+            host,
+            port,
+            connection: None,
+        }
     }
 
-    pub fn connect(&mut self) -> Result<(), String>{
+    pub fn connect(&mut self) -> Result<(), String> {
         let host = self.host.clone();
         let port = self.port;
 
-        let socket = UdpSocket::bind("0.0.0.0:0")
-            .expect("Unable to connect to the host");
+        let socket = UdpSocket::bind("0.0.0.0:0").expect("Unable to connect to the host");
 
-        socket.set_nonblocking(true)
-            .map_err(|e| e.to_string())?;
+        socket.set_nonblocking(true).map_err(|e| e.to_string())?;
 
         let address = format!("{}:{}", host, port);
 
@@ -112,7 +114,7 @@ impl UdpClient {
     pub fn read_data(&mut self) -> Result<Vec<String>, String> {
         if self.connection.is_none() {
             self.connect().unwrap();
-            return self.read_data()
+            self.read_data()
         } else {
             let socket = self.connection.as_mut().unwrap();
             let mut buff = vec![0u8; 1024];
@@ -132,7 +134,8 @@ impl UdpClient {
                 let ct = String::from_utf8(buff[0..read_cnt].to_vec()).unwrap();
                 content.push_str(&ct);
             }
-            Ok(content.trim()
+            Ok(content
+                .trim()
                 .split('\n')
                 .map(|s| s.to_string())
                 .collect::<Vec<String>>())

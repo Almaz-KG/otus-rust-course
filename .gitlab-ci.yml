@@ -39,7 +39,7 @@ clippy:
   script:
     - rustup component add clippy
     - cargo clippy --version
-    - cargo clippy 
+    - cargo clippy -- -D warnings
   only:
     - merge_requests
 

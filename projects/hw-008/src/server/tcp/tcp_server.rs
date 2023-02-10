@@ -22,13 +22,13 @@ impl TcpServer {
             for stream in listener.incoming() {
                 thread::spawn(move || {
                     let stream = stream.unwrap();
-                    println!("[Server] Connected with {:?}", stream.local_addr().unwrap());
+                    println!("[TcpServer] Connected with {:?}", stream.local_addr().unwrap());
                     let result = TcpSession::run(stream);
                     if result.is_err() {
-                        println!("[Server] Error: {}", result.err().unwrap())
+                        println!("[TcpServer] Error: {}", result.err().unwrap())
                     }
 
-                    println!("[Server] Connection closed")
+                    println!("[TcpServer] Connection closed")
                 });
             }
         })

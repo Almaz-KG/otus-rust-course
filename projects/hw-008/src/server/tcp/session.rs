@@ -76,7 +76,7 @@ pub struct TcpSession {
 
 impl TcpSession {
     fn print_state(&self) {
-        println!("[Session][Status] {}", self.status);
+        println!("[TcpSession][Status] {}", self.status);
     }
 
     fn read_line(&mut self) -> Result<String> {

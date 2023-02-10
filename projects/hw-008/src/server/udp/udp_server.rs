@@ -1,11 +1,11 @@
 use crate::entities::devices::Device;
+use crate::entities::manager::SmartHomeManager;
 use crate::entities::Measure;
 use std::net::{SocketAddr, UdpSocket};
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
-use crate::entities::manager::SmartHomeManager;
 
 pub const SEND_INTERVAL: u64 = 2;
 
@@ -14,61 +14,56 @@ pub const SEND_INTERVAL: u64 = 2;
 pub struct UdpServer {
     active_connections: Mutex<Vec<SocketAddr>>,
     socket: Mutex<UdpSocket>,
-    manager: SmartHomeManager
+    manager: SmartHomeManager,
 }
 
 impl UdpServer {
     fn listen(server: Arc<UdpServer>) {
-        thread::spawn(move || {
-            loop {
-                let mut buf: [u8; 20] = [0; 20];
-                let socket = server.socket.lock().unwrap();
+        thread::spawn(move || loop {
+            let mut buf: [u8; 20] = [0; 20];
+            let socket = server.socket.lock().unwrap();
 
-                match socket.recv_from(&mut buf) {
-                    Ok((_, src_addr)) => {
-                        println!("[UdpServer] Connection from {}", src_addr);
-                        server.active_connections.lock().unwrap().push(src_addr);
-                    }
-                    Err(_) => {
-                        drop(socket);
-                        thread::sleep(Duration::from_secs(SEND_INTERVAL));
-                    },
+            match socket.recv_from(&mut buf) {
+                Ok((_, src_addr)) => {
+                    println!("[UdpServer] Connected with {}", src_addr);
+                    server.active_connections.lock().unwrap().push(src_addr);
+                }
+                Err(_) => {
+                    drop(socket);
+                    thread::sleep(Duration::from_secs(SEND_INTERVAL));
                 }
             }
         });
     }
 
-
     fn send_updates(server: Arc<UdpServer>) {
-        let _thread = thread::spawn(move || {
-            loop {
-                let devices = server.manager.list_all_devices().unwrap();
-                let connections = server.active_connections.lock().unwrap();
+        let _thread = thread::spawn(move || loop {
+            let devices = server.manager.list_all_devices().unwrap();
+            let connections = server.active_connections.lock().unwrap();
 
-                if devices.is_empty() || connections.is_empty() {
-                    thread::sleep(Duration::from_secs(SEND_INTERVAL));
-                    drop(connections);
-                    continue
-                }
+            if devices.is_empty() || connections.is_empty() {
+                thread::sleep(Duration::from_secs(SEND_INTERVAL));
+                drop(connections);
+                continue;
+            }
 
-                for device in devices.iter() {
-                    match device {
-                        Device::Socket(_) => {}
-                        Device::Thermometer(therm) => {
-                            let socket = server.socket.lock().unwrap();
-                            for addr in connections.iter() {
-                                let id = therm.id.clone();
-                                let value = therm.measure().unwrap().unwrap();
-                                let measure = format!("[{}]: {}\n", id, value);
+            for device in devices.iter() {
+                match device {
+                    Device::Socket(_) => {}
+                    Device::Thermometer(therm) => {
+                        let socket = server.socket.lock().unwrap();
+                        for addr in connections.iter() {
+                            let id = therm.id.clone();
+                            let value = therm.measure().unwrap().unwrap();
+                            let measure = format!("[{}]: {}\n", id, value);
 
-                                socket.send_to(measure.as_bytes(), addr).unwrap();
-                            }
+                            socket.send_to(measure.as_bytes(), addr).unwrap();
                         }
                     }
                 }
-                drop(connections);
-                thread::sleep(Duration::from_secs(SEND_INTERVAL));
             }
+            drop(connections);
+            thread::sleep(Duration::from_secs(SEND_INTERVAL));
         });
     }
 

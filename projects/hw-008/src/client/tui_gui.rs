@@ -1,8 +1,8 @@
 use std::borrow::BorrowMut;
 use std::error::Error;
 use std::io;
-use std::sync::{Arc, Mutex};
 use std::sync::mpsc::Sender;
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 use crossterm::event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode};
@@ -14,15 +14,17 @@ use tui::backend::{Backend, CrosstermBackend};
 use tui::layout::{Constraint, Direction, Layout};
 use tui::style::{Color, Modifier, Style};
 use tui::text::{Span, Spans, Text};
-use tui::widgets::{Block, Borders, Paragraph, Cell, List, ListItem, Row, Table};
+use tui::widgets::{Block, Borders, Cell, List, ListItem, Paragraph, Row, Table};
 use tui::{Frame, Terminal};
 use unicode_width::UnicodeWidthStr;
 
 use crate::app::{ApplicationState, SelectedTable};
 use crate::commands::ClientCommand;
 
-pub fn run(application_state: Arc<Mutex<ApplicationState>>,
-           commands_sender: Sender<ClientCommand>) -> Result<(), Box<dyn Error>> {
+pub fn run(
+    application_state: Arc<Mutex<ApplicationState>>,
+    commands_sender: Sender<ClientCommand>,
+) -> Result<(), Box<dyn Error>> {
     // setup terminal
     enable_raw_mode()?;
     let mut stdout = io::stdout();
@@ -73,7 +75,9 @@ fn run_app<B: Backend>(
                         let command = app.current_command.clone();
                         app.current_command.clear();
                         app.executed_commands.push(command.clone());
-                        commands_sender.send(ClientCommand::ExecuteCommand(command)).unwrap()
+                        commands_sender
+                            .send(ClientCommand::ExecuteCommand(command))
+                            .unwrap()
                     }
                     KeyCode::Char(c) => {
                         app.current_command.push(c);
@@ -103,7 +107,7 @@ fn run_app<B: Backend>(
                             SelectedTable::Devices => ClientCommand::GetDeviceInfo,
                         };
                         commands_sender.send(event_type).unwrap();
-                    },
+                    }
                     _ => {}
                 }
             }
@@ -115,7 +119,7 @@ fn run_app<B: Backend>(
     }
 }
 
-fn build_table_widget<'a>(name: &'a str, values: &'a Vec<String>) -> Table<'a> {
+fn build_table_widget<'a>(name: &'a str, values: &'a [String]) -> Table<'a> {
     let selected_style = Style::default().add_modifier(Modifier::REVERSED);
 
     let rows = values.iter().map(|item| {
@@ -134,7 +138,7 @@ fn build_table_widget<'a>(name: &'a str, values: &'a Vec<String>) -> Table<'a> {
         ])
 }
 
-fn build_tui_list_widget<'a>(name: &'a str, values: &'a Vec<String>) -> List<'a> {
+fn build_tui_list_widget<'a>(name: &'a str, values: &'a [String]) -> List<'a> {
     let responses: Vec<ListItem> = values
         .iter()
         .map(|line| {
@@ -149,10 +153,14 @@ fn build_tui_list_widget<'a>(name: &'a str, values: &'a Vec<String>) -> List<'a>
 fn draw<B: Backend>(f: &mut Frame<B>, app_lock: Arc<Mutex<ApplicationState>>) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([
-            Constraint::Percentage(3),
-            Constraint::Percentage(37),
-            Constraint::Percentage(60)].as_ref())
+        .constraints(
+            [
+                Constraint::Percentage(3),
+                Constraint::Percentage(37),
+                Constraint::Percentage(60),
+            ]
+            .as_ref(),
+        )
         .split(f.size());
 
     let msg = vec![
@@ -163,7 +171,10 @@ fn draw<B: Backend>(f: &mut Frame<B>, app_lock: Arc<Mutex<ApplicationState>>) {
         Span::raw(" to move on entity tables, "),
         Span::styled("help", Style::default().add_modifier(Modifier::BOLD)),
         Span::raw(" to print help information, "),
-        Span::styled("UP (↑) / DOWN (↓)", Style::default().add_modifier(Modifier::BOLD)),
+        Span::styled(
+            "UP (↑) / DOWN (↓)",
+            Style::default().add_modifier(Modifier::BOLD),
+        ),
         Span::raw(" to select element from the table "),
     ];
     let text = Text::from(Spans::from(msg));
@@ -222,7 +233,8 @@ fn draw<B: Backend>(f: &mut Frame<B>, app_lock: Arc<Mutex<ApplicationState>>) {
             [
                 Constraint::Percentage(90), // Commands log
                 Constraint::Percentage(10), // Commands input
-            ].as_ref(),
+            ]
+            .as_ref(),
         )
         .split(interaction[0]);
 
@@ -238,7 +250,8 @@ fn draw<B: Backend>(f: &mut Frame<B>, app_lock: Arc<Mutex<ApplicationState>>) {
         // Put cursor past the end of the input text
         commands_layout[1].x + app.current_command.width() as u16 + 1,
         // Move one line down, from the border to the input line
-        commands_layout[1].y + 1);
+        commands_layout[1].y + 1,
+    );
 
     let responses = build_tui_list_widget("Responses", &app.last_response);
     f.render_widget(responses, interaction[1]);

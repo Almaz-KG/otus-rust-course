@@ -1,18 +1,18 @@
 use std::borrow::BorrowMut;
-use std::sync::{Arc, Mutex, MutexGuard};
 use std::sync::mpsc::Receiver;
+use std::sync::{Arc, Mutex, MutexGuard};
 use std::thread;
 
-use tui::widgets::TableState;
 use crate::clients::UdpClient;
 use crate::commands::ClientCommand;
 use crate::TcpClient;
+use tui::widgets::TableState;
 
 #[derive(Clone, Copy)]
 pub enum SelectedTable {
     Homes,
     Rooms,
-    Devices
+    Devices,
 }
 
 impl SelectedTable {
@@ -96,52 +96,51 @@ impl ApplicationState {
             SelectedTable::Homes => {
                 ApplicationState::highlight_next_element(
                     self.homes_table_select_state.borrow_mut(),
-                    self.homes.len());
-            },
-            SelectedTable::Rooms => {
-                ApplicationState::highlight_next_element(
-                    self.rooms_table_select_state.borrow_mut(),
-                    self.rooms.len())
+                    self.homes.len(),
+                );
             }
-            SelectedTable::Devices => {
-                ApplicationState::highlight_next_element(
-                    self.devices_table_select_state.borrow_mut(),
-                    self.devices.len())
-            }
+            SelectedTable::Rooms => ApplicationState::highlight_next_element(
+                self.rooms_table_select_state.borrow_mut(),
+                self.rooms.len(),
+            ),
+            SelectedTable::Devices => ApplicationState::highlight_next_element(
+                self.devices_table_select_state.borrow_mut(),
+                self.devices.len(),
+            ),
         }
     }
 
     pub fn highlight_previous(&mut self) {
         match self.current_selected_table {
-            SelectedTable::Homes => {
-                ApplicationState::highlight_previous_element(
-                    self.homes_table_select_state.borrow_mut(),
-                    self.homes.len())
-            },
-            SelectedTable::Rooms => {
-                ApplicationState::highlight_previous_element(
-                    self.rooms_table_select_state.borrow_mut(),
-                    self.rooms.len())
-            }
-            SelectedTable::Devices => {
-                ApplicationState::highlight_previous_element(
-                    self.devices_table_select_state.borrow_mut(),
-                    self.devices.len())
-            }
+            SelectedTable::Homes => ApplicationState::highlight_previous_element(
+                self.homes_table_select_state.borrow_mut(),
+                self.homes.len(),
+            ),
+            SelectedTable::Rooms => ApplicationState::highlight_previous_element(
+                self.rooms_table_select_state.borrow_mut(),
+                self.rooms.len(),
+            ),
+            SelectedTable::Devices => ApplicationState::highlight_previous_element(
+                self.devices_table_select_state.borrow_mut(),
+                self.devices.len(),
+            ),
         }
     }
 }
 
 pub struct ApplicationStateUpdater {
     app_state: Arc<Mutex<ApplicationState>>,
-    events_receiver: Receiver<ClientCommand>
+    events_receiver: Receiver<ClientCommand>,
 }
 
 impl ApplicationStateUpdater {
-    pub fn new(app_state: Arc<Mutex<ApplicationState>>, events_receiver: Receiver<ClientCommand>) -> Self {
+    pub fn new(
+        app_state: Arc<Mutex<ApplicationState>>,
+        events_receiver: Receiver<ClientCommand>,
+    ) -> Self {
         Self {
             app_state,
-            events_receiver
+            events_receiver,
         }
     }
 
@@ -157,58 +156,68 @@ impl ApplicationStateUpdater {
 
                     match command {
                         ClientCommand::GetAllHomes => {
-                            let homes = ApplicationStateUpdater::handle_execute_command
-                                ("list homes".to_string(), &mut app_state);
+                            let homes = ApplicationStateUpdater::handle_execute_command(
+                                "list homes".to_string(),
+                                &mut app_state,
+                            );
                             app_state.homes = homes;
-                        },
+                        }
                         ClientCommand::GetAllRooms => {
-                            let rooms = ApplicationStateUpdater::handle_execute_command
-                                ("list rooms".to_string(), &mut app_state);
+                            let rooms = ApplicationStateUpdater::handle_execute_command(
+                                "list rooms".to_string(),
+                                &mut app_state,
+                            );
                             app_state.rooms = rooms;
-                        },
+                        }
                         ClientCommand::GetAllDevices => {
-                            let devices = ApplicationStateUpdater::handle_execute_command
-                                ("list devices".to_string(), &mut app_state);
+                            let devices = ApplicationStateUpdater::handle_execute_command(
+                                "list devices".to_string(),
+                                &mut app_state,
+                            );
                             app_state.devices = devices;
-                        },
+                        }
 
                         ClientCommand::GetHomeInfo => {
-                            let index = app_state.homes_table_select_state
-                                .selected()
-                                .unwrap_or(0);
+                            let index = app_state.homes_table_select_state.selected().unwrap_or(0);
 
                             let id = app_state.homes.get(index).unwrap();
                             let command = format!("status home -i {}", id);
                             let result = ApplicationStateUpdater::handle_execute_command(
-                                command, &mut app_state);
+                                command,
+                                &mut app_state,
+                            );
                             app_state.last_info = result;
-                        },
+                        }
 
                         ClientCommand::GetRoomInfo => {
-                            let index = app_state.rooms_table_select_state
-                                .selected()
-                                .unwrap_or(0);
+                            let index = app_state.rooms_table_select_state.selected().unwrap_or(0);
 
                             let id = app_state.rooms.get(index).unwrap();
                             let command = format!("status room -i {}", id);
                             let result = ApplicationStateUpdater::handle_execute_command(
-                                command, &mut app_state);
+                                command,
+                                &mut app_state,
+                            );
                             app_state.last_info = result;
                         }
                         ClientCommand::GetDeviceInfo => {
-                            let index = app_state.devices_table_select_state
-                                .selected()
-                                .unwrap_or(0);
+                            let index =
+                                app_state.devices_table_select_state.selected().unwrap_or(0);
 
                             let id = app_state.devices.get(index).unwrap();
                             let command = format!("status device -i {}", id);
                             let result = ApplicationStateUpdater::handle_execute_command(
-                                command, &mut app_state);
+                                command,
+                                &mut app_state,
+                            );
                             app_state.last_info = result;
                         }
                         ClientCommand::ExecuteCommand(cmd) => {
                             app_state.last_response =
-                                ApplicationStateUpdater::handle_execute_command(cmd, &mut app_state);
+                                ApplicationStateUpdater::handle_execute_command(
+                                    cmd,
+                                    &mut app_state,
+                                );
                         }
                     }
                 }
@@ -216,16 +225,19 @@ impl ApplicationStateUpdater {
         });
     }
 
-    fn handle_execute_command(command: String,
-                              app_state: &mut MutexGuard<ApplicationState>) -> Vec<String> {
+    fn handle_execute_command(
+        command: String,
+        app_state: &mut MutexGuard<ApplicationState>,
+    ) -> Vec<String> {
         let state = app_state;
         let result = state.tcp_client.command(command);
 
         result
-            .map(|msg| {msg
-                .split("\n")
-                .map(|s| s.to_string())
-                .collect::<Vec<String>>()})
+            .map(|msg| {
+                msg.split('\n')
+                    .map(|s| s.to_string())
+                    .collect::<Vec<String>>()
+            })
             .map_err(|e| vec![format!("Error: {}", e)])
             .unwrap()
     }

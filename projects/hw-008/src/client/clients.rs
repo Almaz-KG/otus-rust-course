@@ -1,7 +1,7 @@
+use crate::ServerResponse;
 use std::io::{BufReader, Read, Write};
 use std::net::TcpStream;
 use std::time::Duration;
-use crate::ServerResponse;
 
 pub struct TcpClient {
     host: String,
@@ -12,7 +12,11 @@ pub struct TcpClient {
 
 impl TcpClient {
     pub fn new(host: String, port: u16) -> Self {
-        TcpClient { host, port, connection: None }
+        TcpClient {
+            host,
+            port,
+            connection: None,
+        }
     }
 
     fn read_data(socket: &mut TcpStream) -> Result<String, String> {
@@ -53,9 +57,10 @@ impl TcpClient {
 
         self.connection = Some(stream);
 
-        return Ok("Connection established.\n \
+        Ok("Connection established.\n \
                 Type --help to get detailed info. \
-                Type `exit` or `quit` to exit from the app".to_string());
+                Type `exit` or `quit` to exit from the app"
+            .to_string())
     }
 
     pub fn command(&mut self, command: String) -> ServerResponse {
@@ -63,45 +68,12 @@ impl TcpClient {
             self.connect().unwrap();
         }
 
-        let mut stream = self.connection.as_mut().unwrap();
+        let stream = self.connection.as_mut().unwrap();
 
-        TcpClient::write_data(&mut stream, command.as_bytes()).unwrap();
-        let response = TcpClient::read_data(&mut stream)?;
+        TcpClient::write_data(stream, command.as_bytes()).unwrap();
+        let response = TcpClient::read_data(stream)?;
         Ok(response)
-
-        // if let Some(stream) = self.connection.as_mut() {
-        //     self.write_data(stream, command.as_bytes())?;
-        //     //
-        // } else {
-        //     Err("Unknown error".to_string())
-        // }
     }
-
-    // pub fn run(&self) -> Result<(), String> {
-    //
-    //
-    //     let mut stdin = std::io::stdin().lock();
-    //     let mut quit = false;
-    //
-    //     while !quit {
-    //         let mut command = String::new();
-    //         self.write_prompt()?;
-    //
-    //         stdin.read_line(&mut command).expect("Unable read command");
-    //         let command = command.trim();
-    //
-    //         if command == "quit" || command == "exit" {
-    //             quit = true;
-    //             continue;
-    //         }
-    //
-    //         self.write_data(&mut stream, command.as_bytes())?;
-    //         let response = self.read_data(&mut stream)?;
-    //         self.write_to_console(&response)?;
-    //     }
-    //
-    //     Ok(())
-    // }
 }
 
 pub struct UdpClient {

@@ -1,13 +1,13 @@
 mod app;
 mod clients;
-mod tui_gui;
 mod commands;
+mod tui_gui;
 
-use std::sync::{Arc, mpsc, Mutex};
-use clap::Parser;
-use clients::*;
 use crate::app::{ApplicationState, ApplicationStateUpdater};
 use crate::commands::ClientCommand;
+use clap::Parser;
+use clients::*;
+use std::sync::{mpsc, Arc, Mutex};
 
 type ServerResponse = Result<String, String>;
 
@@ -31,18 +31,17 @@ fn main() {
     let port = args.port;
 
     let tcp_client = TcpClient::new(host.clone(), port);
-    let udp_client = UdpClient::new(host.clone(), port);
+    let udp_client = UdpClient::new(host, port);
     let app_state = ApplicationState::new(tcp_client, udp_client);
 
     let app_state_lock = Arc::new(Mutex::new(app_state));
     let (sender, receiver) = mpsc::channel::<ClientCommand>();
-    let application_state_updater = ApplicationStateUpdater::new(
-        app_state_lock.clone(), receiver);
+    let application_state_updater = ApplicationStateUpdater::new(app_state_lock.clone(), receiver);
     application_state_updater.start();
 
     sender.send(ClientCommand::GetAllHomes).unwrap();
     sender.send(ClientCommand::GetAllRooms).unwrap();
     sender.send(ClientCommand::GetAllDevices).unwrap();
 
-    tui_gui::run(app_state_lock.clone(), sender).unwrap();
+    tui_gui::run(app_state_lock, sender).unwrap();
 }

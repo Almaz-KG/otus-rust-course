@@ -242,10 +242,7 @@ impl<'a> CommandHandler<'a> {
     fn print_device_ids(&mut self) {
         match self.smart_home_manager.list_all_devices() {
             Ok(devices) => {
-                let ids: Vec<String> = devices
-                    .iter()
-                    .map(|d| format!("{}", d.id()))
-                    .collect();
+                let ids: Vec<String> = devices.iter().map(|d| d.id().to_string()).collect();
 
                 let response = ids.join("\n");
                 self.write_response(&response).unwrap();
@@ -257,10 +254,7 @@ impl<'a> CommandHandler<'a> {
     fn print_room_ids(&mut self) {
         match self.smart_home_manager.list_all_rooms() {
             Ok(rooms) => {
-                let ids: Vec<String> = rooms
-                    .iter()
-                    .map(|r| format!("{}", r.id))
-                    .collect();
+                let ids: Vec<String> = rooms.iter().map(|r| r.id.to_string()).collect();
 
                 let response = ids.join("\n");
                 self.write_response(&response).unwrap();
@@ -272,10 +266,7 @@ impl<'a> CommandHandler<'a> {
     fn print_home_ids(&mut self) {
         match self.smart_home_manager.list_all_homes() {
             Ok(homes) => {
-                let ids: Vec<String> = homes
-                    .iter()
-                    .map(|h| format!("{}", h.id))
-                    .collect();
+                let ids: Vec<String> = homes.iter().map(|h| h.id.to_string()).collect();
 
                 let response = ids.join("\n");
                 self.write_response(&response).unwrap();

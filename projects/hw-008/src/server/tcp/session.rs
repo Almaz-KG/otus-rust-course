@@ -63,7 +63,7 @@ impl Display for ConnectionStatus {
             ConnectionStatus::Connected => formatter.write_str("Connected"),
             ConnectionStatus::Disconnected => formatter.write_str("Disconnected"),
             ConnectionStatus::Handshaked => formatter.write_str("Handshaked"),
-            ConnectionStatus::WaitingForCommand => formatter.write_str("WaitingForCommand"),
+            ConnectionStatus::WaitingForCommand => formatter.write_str("Waiting for command"),
             ConnectionStatus::Error(msg) => formatter.write_str(&format!("Error: {}", msg)),
         }
     }

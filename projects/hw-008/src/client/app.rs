@@ -2,6 +2,8 @@ use std::borrow::BorrowMut;
 use std::sync::mpsc::Receiver;
 use std::sync::{Arc, Mutex, MutexGuard};
 use std::thread;
+use std::time::Duration;
+use clap::builder::Str;
 
 use crate::clients::UdpClient;
 use crate::commands::ClientCommand;
@@ -31,6 +33,7 @@ pub struct ApplicationState {
     pub current_command: String,
     pub executed_commands: Vec<String>,
     pub last_response: Vec<String>,
+    pub last_udp_measurements: Vec<String>,
     pub last_info: Vec<String>,
     pub homes: Vec<String>,
     pub rooms: Vec<String>,
@@ -52,6 +55,7 @@ impl ApplicationState {
             current_command: "".to_string(),
             executed_commands: vec![],
             last_response: vec![],
+            last_udp_measurements: vec![],
             last_info: vec![],
             homes: vec![],
             rooms: vec![],
@@ -242,3 +246,44 @@ impl ApplicationStateUpdater {
             .unwrap()
     }
 }
+
+pub struct UdpStateUpdater {
+    app_state: Arc<Mutex<ApplicationState>>,
+}
+
+impl UdpStateUpdater {
+    pub fn new(app_state: Arc<Mutex<ApplicationState>>) -> Self { Self { app_state } }
+
+    pub fn start(self) {
+        thread::spawn(move || {
+            let mut app_state = self.app_state.lock().unwrap();
+            assert!(app_state.udp_client.connect().is_ok());
+            drop(app_state);
+
+            loop {
+                let mut app_state = self.app_state.lock().unwrap();
+                let mut udp_client = &mut app_state.udp_client;
+                match udp_client.read_data() {
+                    Ok(msgs) => {
+                        if !msgs.is_empty() {
+                            let msrmts = app_state
+                                .last_udp_measurements
+                                .clone()
+                                .into_iter()
+                                .chain(msgs)
+                                .rev()
+                                .take(100)
+                                .collect::<Vec<String>>();
+
+                            app_state.last_udp_measurements = msrmts;
+                        }
+                    }
+                    Err(_) => {} // Ignore error case
+                };
+                drop(app_state);
+                thread::sleep(Duration::from_secs(2));
+            }
+        }).join().unwrap();
+    }
+}
+

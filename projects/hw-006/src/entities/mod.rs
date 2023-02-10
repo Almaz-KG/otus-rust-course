@@ -23,7 +23,7 @@ pub use reportable::{ReportError, Reportable};
 mod measure;
 pub use measure::{Measure, MeasureError};
 
-pub(crate) fn generate_id(r#type: &str) -> String {
+pub(crate) fn generate_id(entity_type: &str) -> String {
     use rand::distributions::Alphanumeric;
     use rand::Rng;
 
@@ -33,5 +33,5 @@ pub(crate) fn generate_id(r#type: &str) -> String {
         .map(char::from)
         .collect();
 
-    format!("{}_{}", r#type, id)
+    format!("{entity_type}_{id}")
 }

@@ -35,11 +35,11 @@ impl TcpClient {
     fn write_data(socket: &mut TcpStream, data: &[u8]) -> Result<(), String> {
         socket
             .set_write_timeout(Some(Duration::from_secs(3)))
-            .map_err(|e| format!("Unable to set write timeout: {:?}", e))?;
+            .map_err(|e| format!("Unable to set write timeout: {e:?}"))?;
 
         socket
             .write_all(data)
-            .map_err(|e| format!("Error: {:?}", e))?;
+            .map_err(|e| format!("Error: {e:?}"))?;
         Ok(())
     }
 
@@ -52,7 +52,7 @@ impl TcpClient {
         let handshake = TcpClient::read_data(&mut stream)?;
 
         if handshake.trim() != "handshake" {
-            return Ok(format!("Expected handshake message, but got {}", handshake));
+            return Ok(format!("Expected handshake message, but got {handshake}"));
         }
 
         self.connection = Some(stream);
@@ -99,7 +99,7 @@ impl UdpClient {
 
         socket.set_nonblocking(true).map_err(|e| e.to_string())?;
 
-        let address = format!("{}:{}", host, port);
+        let address = format!("{host}:{port}");
 
         let result = socket
             .send_to("handshake".as_bytes(), address)

@@ -38,15 +38,15 @@ impl Display for MeasureError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> FmtResult {
         match self {
             MeasureError::WrongDeviceStateError(msg) => {
-                formatter.write_str(&format!("WrongDeviceStateError: {}", msg))
+                formatter.write_str(&format!("WrongDeviceStateError: {msg}"))
             }
             MeasureError::DeviceIsOff => formatter.write_str("DeviceIsOff"),
             MeasureError::DeviceIsUnreachable => formatter.write_str("DeviceIsUnreachable"),
             MeasureError::MeasurementError(msg) => {
-                formatter.write_str(&format!("MeasurementError: {}", msg))
+                formatter.write_str(&format!("MeasurementError: {msg}"))
             }
             MeasureError::UnknownError(msg) => {
-                formatter.write_str(&format!("UnknownError: {}", msg))
+                formatter.write_str(&format!("UnknownError: {msg}"))
             }
         }
     }

@@ -17,7 +17,7 @@ pub struct ServerArgs {
 fn main() {
     let args = ServerArgs::parse();
 
-    println!("Starting servers with {:?}", args);
+    println!("Starting servers with {args:?}");
 
     let host = args.host.unwrap_or_else(|| "localhost".into());
     let port = args.port.unwrap_or(0u16);

@@ -33,7 +33,7 @@ impl Display for Thermometer {
             self.description.clone().unwrap_or_default()
         );
 
-        write!(formatter, "{}", txt)
+        write!(formatter, "{txt}")
     }
 }
 
@@ -53,7 +53,7 @@ impl Reportable for Thermometer {
     fn report(&self) -> Result<String, ReportError> {
         match self.measure() {
             Ok(result) => match result {
-                Some(value) => Ok(format!("Thermometer: {}, Measure: {}", self.name, value)),
+                Some(value) => Ok(format!("Thermometer: {}, Measure: {value}", self.name)),
                 None => Ok(format!("Thermometer: {}, No measure value", self.name)),
             },
             Err(msg) => Err(msg.into()),

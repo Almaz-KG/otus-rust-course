@@ -20,7 +20,7 @@ pub enum SocketStatus {
 /// issue.
 impl Display for SocketStatus {
     fn fmt(&self, formatter: &mut Formatter) -> Result {
-        write!(formatter, "{}", format!("{:?}", self).to_lowercase())
+        write!(formatter, "{}", format!("{self:?}").to_lowercase())
     }
 }
 
@@ -107,7 +107,7 @@ impl Display for Socket {
             self.status
         );
 
-        write!(formatter, "{}", txt)
+        write!(formatter, "{txt}")
     }
 }
 

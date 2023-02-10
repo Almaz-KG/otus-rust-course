@@ -92,7 +92,7 @@ impl TcpSession {
                 };
                 Ok(String::from_utf8(buf[0..last_index].to_vec()).unwrap())
             }
-            Err(e) => Err(anyhow!("Unable read data from client: {:?}", e)),
+            Err(e) => Err(anyhow!("Unable read data from client: {e:?}")),
         }
     }
 
@@ -116,7 +116,7 @@ impl TcpSession {
                 let commands: Vec<String> = args.split(' ').map(|s| s.to_string()).collect();
                 Ok(commands)
             }
-            Err(e) => Err(anyhow!("Unable read data from client: {:?}", e)),
+            Err(e) => Err(anyhow!("Unable read data from client: {e:?}")),
         }
     }
 

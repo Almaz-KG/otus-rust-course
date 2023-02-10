@@ -40,7 +40,7 @@ impl Display for Thermometer {
             self.description.clone().unwrap_or_default()
         );
 
-        write!(formatter, "{}", txt)
+        write!(formatter, "{txt}")
     }
 }
 

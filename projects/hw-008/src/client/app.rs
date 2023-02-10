@@ -184,7 +184,7 @@ impl ApplicationStateUpdater {
                             let index = app_state.homes_table_select_state.selected().unwrap_or(0);
 
                             let id = app_state.homes.get(index).unwrap();
-                            let command = format!("status home -i {}", id);
+                            let command = format!("status home -i {id}");
                             let result = ApplicationStateUpdater::handle_execute_command(
                                 command,
                                 &mut app_state,
@@ -196,7 +196,7 @@ impl ApplicationStateUpdater {
                             let index = app_state.rooms_table_select_state.selected().unwrap_or(0);
 
                             let id = app_state.rooms.get(index).unwrap();
-                            let command = format!("status room -i {}", id);
+                            let command = format!("status room -i {id}");
                             let result = ApplicationStateUpdater::handle_execute_command(
                                 command,
                                 &mut app_state,
@@ -208,7 +208,7 @@ impl ApplicationStateUpdater {
                                 app_state.devices_table_select_state.selected().unwrap_or(0);
 
                             let id = app_state.devices.get(index).unwrap();
-                            let command = format!("status device -i {}", id);
+                            let command = format!("status device -i {id}");
                             let result = ApplicationStateUpdater::handle_execute_command(
                                 command,
                                 &mut app_state,
@@ -241,7 +241,7 @@ impl ApplicationStateUpdater {
                     .map(|s| s.to_string())
                     .collect::<Vec<String>>()
             })
-            .map_err(|e| vec![format!("Error: {}", e)])
+            .map_err(|e| vec![e])
             .unwrap()
     }
 }

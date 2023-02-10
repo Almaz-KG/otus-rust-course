@@ -156,7 +156,7 @@ pub struct Arguments {
     command: Command,
 }
 
-pub struct Cli {}
+pub struct Cli;
 
 impl Cli {
     pub fn process(args: Arguments) {
@@ -172,7 +172,7 @@ impl Cli {
 
     fn get_repo_dir() -> Result<PathBuf, String> {
         let mut current_dir = std::env::current_dir()
-            .map_err(|e| format!("Unable determine the current dir {}", e))?;
+            .map_err(|e| format!("Unable determine the current dir {e}"))?;
 
         current_dir.push(REPO_DIR);
         Ok(current_dir)
@@ -180,7 +180,7 @@ impl Cli {
 
     fn get_state_file() -> Result<PathBuf, String> {
         let mut current_dir = std::env::current_dir()
-            .map_err(|e| format!("Unable determine the current dir {}", e))?;
+            .map_err(|e| format!("Unable determine the current dir {e}"))?;
 
         current_dir.push(REPO_DIR);
         current_dir.push(SMART_HOME_FILE);
@@ -253,11 +253,11 @@ impl Cli {
         current_dir.push(SMART_HOME_FILE);
         let path = current_dir.as_path();
         let file =
-            fs::File::open(path).map_err(|e| format!("Unable open smart-home state file {}", e))?;
+            fs::File::open(path).map_err(|e| format!("Unable open smart-home state file {e}"))?;
         let reader = BufReader::new(file);
 
         let state: SavedSmartHome = serde_json::from_reader(reader)
-            .map_err(|e| format!("{}", e))
+            .map_err(|e| e.to_string())
             .expect("Unable deserialize the smart-home state");
 
         Ok(state)
@@ -321,7 +321,7 @@ impl Cli {
                 Ok(state) => match state {
                     Some(homes) => {
                         for home in homes {
-                            println!("{}", home);
+                            println!("{home}");
                         }
                     }
                     None => {
@@ -332,7 +332,7 @@ impl Cli {
                     }
                 },
                 Err(msg) => {
-                    eprintln!("{}", msg)
+                    eprintln!("{msg}")
                 }
             }
         } else {
@@ -352,7 +352,7 @@ impl Cli {
         .expect("Unable create a home");
 
         if let Err(msg) = Cli::update_home_state(home) {
-            eprintln!("Unable to save changes: {}", msg)
+            eprintln!("Unable to save changes: {msg}")
         }
     }
 
@@ -372,7 +372,7 @@ impl Cli {
                 home.rooms.push(new_room);
 
                 if let Err(msg) = Cli::update_home_state(home) {
-                    eprintln!("Unable to save changes: {}", msg)
+                    eprintln!("Unable to save changes: {msg}")
                 }
             }
             _ => {
@@ -422,7 +422,7 @@ impl Cli {
                 home.rooms = rooms;
 
                 if let Err(msg) = Cli::update_home_state(home) {
-                    eprintln!("Unable to save changes: {}", msg)
+                    eprintln!("Unable to save changes: {msg}")
                 }
             }
             _ => {
@@ -448,12 +448,12 @@ impl Cli {
                     let new_state: Vec<Home> = homes.into_iter().filter(|h| h.id != id).collect();
 
                     if let Err(msg) = Cli::update_state(Some(new_state)) {
-                        eprintln!("Unable to save changes: {}", msg)
+                        eprintln!("Unable to save changes: {msg}")
                     }
                 }
             }
             Err(msg) => {
-                eprintln!("Unable remove home: {}", msg)
+                eprintln!("Unable remove home: {msg}")
             }
         }
     }
@@ -476,13 +476,13 @@ impl Cli {
                         new_state.push(home);
 
                         if let Err(msg) = Cli::update_state(Some(new_state)) {
-                            eprintln!("Unable to save changes: {}", msg)
+                            eprintln!("Unable to save changes: {msg}")
                         }
                     }
                 }
             }
             Err(msg) => {
-                eprintln!("Unable remove home: {}", msg)
+                eprintln!("Unable remove home: {msg}")
             }
         }
     }
@@ -504,13 +504,13 @@ impl Cli {
                 home.rooms = new_rooms;
 
                 if let Err(msg) = Cli::update_home_state(home) {
-                    eprintln!("Unable to save changes: {}", msg)
+                    eprintln!("Unable to save changes: {msg}")
                 }
             } else {
                 eprintln!("Unable find associated home for room: {}", room.id)
             }
         } else {
-            eprintln!("Unable find associated room for device: {}", id)
+            eprintln!("Unable find associated room for device: {id}")
         }
     }
 
@@ -533,7 +533,7 @@ impl Cli {
                     }
                 }
                 Err(msg) => {
-                    eprintln!("{}", msg)
+                    eprintln!("{msg}")
                 }
             }
         }
@@ -550,7 +550,7 @@ impl Cli {
                     }
                 }
                 Err(msg) => {
-                    eprintln!("{}", msg)
+                    eprintln!("{msg}")
                 }
             }
         }
@@ -569,7 +569,7 @@ impl Cli {
                     }
                 }
                 Err(msg) => {
-                    eprintln!("{}", msg)
+                    eprintln!("{msg}")
                 }
             }
         }

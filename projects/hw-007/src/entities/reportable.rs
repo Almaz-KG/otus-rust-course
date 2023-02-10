@@ -44,21 +44,20 @@ impl Display for ReportError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> FmtResult {
         match self {
             ReportError::NetworkError(msg) => {
-                formatter.write_str(&format!("NetworkError: {}", msg))
+                formatter.write_str(&format!("NetworkError: {msg}"))
             }
             ReportError::InternalError(msg) => {
-                formatter.write_str(&format!("InternalError: {}", msg))
+                formatter.write_str(&format!("InternalError: {msg}"))
             }
             ReportError::MeasureError(msg) => {
-                formatter.write_str(&format!("MeasureError: {}", msg))
+                formatter.write_str(&format!("MeasureError: {msg}"))
             }
             ReportError::NestedError(msg, root_cause) => formatter.write_str(&format!(
                 "Another error happened during handing first one. \
-                    Handler message: {}. The root cause message: {}",
-                msg, root_cause
+                    Handler message: {msg}. The root cause message: {root_cause}"
             )),
             ReportError::UnknownError(msg) => {
-                formatter.write_str(&format!("UnknownError: {}", msg))
+                formatter.write_str(&format!("UnknownError: {msg}"))
             }
         }
     }
@@ -70,7 +69,7 @@ impl From<MeasureError> for ReportError {
     fn from(measure: MeasureError) -> Self {
         match measure {
             MeasureError::WrongDeviceStateError(msg) => {
-                ReportError::InternalError(format!("Wrong device state: {}", msg))
+                ReportError::InternalError(format!("Wrong device state: {msg}"))
             }
             MeasureError::DeviceIsOff => ReportError::InternalError("Device is OFF".to_string()),
             MeasureError::DeviceIsUnreachable => {

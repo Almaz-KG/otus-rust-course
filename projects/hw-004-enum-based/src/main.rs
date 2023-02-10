@@ -41,19 +41,19 @@ fn main() {
 
     println!("=========== Display ===============");
     println!("=========== Home ===============");
-    println!("{}", house);
+    println!("{house}");
 
     println!("=========== Rooms ===============");
     let rooms = house.get_rooms();
     for room in rooms {
-        println!("{}", room);
+        println!("{room}");
     }
     println!("=========== Devices =============");
     let devices = house
         .get_devices(&rooms[0])
         .expect("Unable to get devices list");
     for device in devices {
-        println!("{}", device);
+        println!("{device}");
     }
 
     println!("=========== Report ===============");

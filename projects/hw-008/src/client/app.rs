@@ -1,5 +1,4 @@
 use std::borrow::BorrowMut;
-use std::ops::Index;
 use std::sync::{Arc, Mutex, MutexGuard};
 use std::sync::mpsc::Receiver;
 use std::thread;
@@ -7,7 +6,7 @@ use std::thread;
 use tui::widgets::TableState;
 use crate::clients::UdpClient;
 use crate::commands::ClientCommand;
-use crate::{ServerResponse, TcpClient};
+use crate::TcpClient;
 
 #[derive(Clone, Copy)]
 pub enum SelectedTable {
@@ -219,7 +218,7 @@ impl ApplicationStateUpdater {
 
     fn handle_execute_command(command: String,
                               app_state: &mut MutexGuard<ApplicationState>) -> Vec<String> {
-        let mut state = app_state;
+        let state = app_state;
         let result = state.tcp_client.command(command);
 
         result

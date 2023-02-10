@@ -1,9 +1,6 @@
-use std::io::{stdout, BufRead, BufReader, Read, Write};
+use std::io::{BufReader, Read, Write};
 use std::net::TcpStream;
 use std::time::Duration;
-use clap::builder::Str;
-use serde_json::to_string;
-use crate::commands::ClientCommand;
 use crate::ServerResponse;
 
 pub struct TcpClient {
@@ -16,28 +13,6 @@ pub struct TcpClient {
 impl TcpClient {
     pub fn new(host: String, port: u16) -> Self {
         TcpClient { host, port, connection: None }
-    }
-
-    fn write_to_console(&self, content: &str) -> Result<(), String> {
-        if !content.is_empty() {
-            print!("{}", content);
-            if content.as_bytes()[content.len() - 1] != b'\n' {
-                println!();
-            }
-            stdout()
-                .flush()
-                .map_err(|e| format!("Couldn't flush stdout: {:?}", e))?;
-        }
-        Ok(())
-    }
-
-    fn write_prompt(&self) -> Result<(), String> {
-        print!("->");
-        stdout()
-            .flush()
-            .map_err(|e| format!("Couldn't flush stdout: {:?}", e))?;
-
-        Ok(())
     }
 
     fn read_data(socket: &mut TcpStream) -> Result<String, String> {

@@ -1,4 +1,4 @@
-use std::borrow::{Borrow, BorrowMut};
+use std::borrow::BorrowMut;
 use std::error::Error;
 use std::io;
 use std::sync::{Arc, Mutex};
@@ -14,14 +14,11 @@ use tui::backend::{Backend, CrosstermBackend};
 use tui::layout::{Constraint, Direction, Layout};
 use tui::style::{Color, Modifier, Style};
 use tui::text::{Span, Spans, Text};
-use tui::widgets::{Block, Borders, Paragraph, TableState};
-use tui::widgets::{Cell, List, ListItem, Row, Table};
+use tui::widgets::{Block, Borders, Paragraph, Cell, List, ListItem, Row, Table};
 use tui::{Frame, Terminal};
 use unicode_width::UnicodeWidthStr;
 
 use crate::app::{ApplicationState, SelectedTable};
-use crate::clients::TcpClient;
-use crate::clients::UdpClient;
 use crate::commands::ClientCommand;
 
 pub fn run(application_state: Arc<Mutex<ApplicationState>>,

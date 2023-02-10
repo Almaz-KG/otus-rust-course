@@ -32,3 +32,16 @@
 - создание системных потоков и приём данных по UDP
 
 ### Рекомендуем сдать до: 01.02.2023
+
+
+
+### How to run
+> first open a terminal and  run ./run_server.sh file
+> 
+> make sure that server started successfully
+> 
+> cargo run --bin client -- --host localhost --port 55082
+
+### Client GUI
+
+![client](client-gui.png)

@@ -16,7 +16,7 @@ impl TcpServer {
         let listener = TcpListener::bind((host, port)).unwrap();
         let addr = listener.local_addr().unwrap();
 
-        println!("Running server on {}", addr);
+        println!("Running server on {addr}");
         for stream in listener.incoming() {
             thread::spawn(move || {
                 let stream = stream.unwrap();

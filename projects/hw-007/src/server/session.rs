@@ -63,7 +63,7 @@ impl Display for ConnectionStatus {
             ConnectionStatus::Disconnected => formatter.write_str("Disconnected"),
             ConnectionStatus::Handshaked => formatter.write_str("Handshaked"),
             ConnectionStatus::WaitingForCommand => formatter.write_str("WaitingForCommand"),
-            ConnectionStatus::Error(msg) => formatter.write_str(&format!("Error: {}", msg)),
+            ConnectionStatus::Error(msg) => formatter.write_str(&format!("Error: {msg}")),
         }
     }
 }
@@ -91,7 +91,7 @@ impl TcpSession {
                 };
                 Ok(String::from_utf8(buf[0..last_index].to_vec()).unwrap())
             }
-            Err(e) => Err(anyhow!("Unable read data from client: {:?}", e)),
+            Err(e) => Err(anyhow!("Unable read data from client: {e:?}")),
         }
     }
 
@@ -115,7 +115,7 @@ impl TcpSession {
                 let commands: Vec<String> = args.split(' ').map(|s| s.to_string()).collect();
                 Ok(commands)
             }
-            Err(e) => Err(anyhow!("Unable read data from client: {:?}", e)),
+            Err(e) => Err(anyhow!("Unable read data from client: {e:?}")),
         }
     }
 
@@ -144,7 +144,7 @@ impl TcpSession {
                     ConnectionStatus::Error("handshake was expected".into())
                 }
             }
-            Err(msg) => ConnectionStatus::Error(format!("Error in handshake step {}", msg)),
+            Err(msg) => ConnectionStatus::Error(format!("Error in handshake step {msg}")),
         };
 
         self.status = status;
@@ -215,7 +215,7 @@ impl TcpSession {
                     println!("[Server][Command] Command executed");
                 }
                 Err(msg) => {
-                    return Err(anyhow!(format!("Unable read command: {}", msg)));
+                    return Err(anyhow!(format!("Unable read command: {msg}")));
                 }
             }
             session.print_state();
@@ -237,7 +237,7 @@ mod tests {
             Ok(_) => {}
             Err(e) => {
                 let error_message = e.render().to_string();
-                println!("{}", error_message);
+                println!("{error_message}");
             }
         }
     }
@@ -252,7 +252,7 @@ mod tests {
             Ok(_) => {}
             Err(e) => {
                 let error_message = e.render().to_string();
-                eprintln!("{}", error_message);
+                eprintln!("{error_message}");
             }
         }
     }

@@ -140,7 +140,7 @@ impl<'a> CommandHandler<'a> {
         let reader = BufReader::new(file);
 
         let state: SavedSmartHome = serde_json::from_reader(reader)
-            .map_err(|e| format!("{}", e))
+            .map_err(|e| e.to_string())
             .expect("Unable deserialize the smart-home state");
 
         Ok(state)
@@ -210,7 +210,7 @@ impl<'a> CommandHandler<'a> {
                         self.write_response("Not found").unwrap()
                     } else {
                         for home in homes {
-                            self.write_response(&format!("{}", home)).unwrap();
+                            self.write_response(&home.to_string()).unwrap();
                         }
                     }
                 }
@@ -223,7 +223,7 @@ impl<'a> CommandHandler<'a> {
                 }
             },
             Err(msg) => {
-                self.write_response(&format!("{}", msg)).unwrap();
+                self.write_response(&msg.to_string()).unwrap();
             }
         }
     }
@@ -239,7 +239,7 @@ impl<'a> CommandHandler<'a> {
 
                         for room in rooms {
                             found = true;
-                            self.write_response(&format!("{}", room)).unwrap();
+                            self.write_response(&room.to_string()).unwrap();
                         }
                     }
 
@@ -249,7 +249,7 @@ impl<'a> CommandHandler<'a> {
                 }
             }
             Err(msg) => {
-                self.write_response(&format!("{}", msg)).unwrap();
+                self.write_response(&msg.to_string()).unwrap();
             }
         }
     }
@@ -284,7 +284,7 @@ impl<'a> CommandHandler<'a> {
                 home.rooms = new_rooms;
 
                 if let Err(msg) = self.update_home_state(home) {
-                    self.write_response(&format!("Unable to save changes: {}", msg))
+                    self.write_response(&format!("Unable to save changes: {msg}"))
                         .unwrap();
                 }
             } else {
@@ -296,8 +296,7 @@ impl<'a> CommandHandler<'a> {
             }
         } else {
             self.write_response(&format!(
-                "Unable find associated room for device: {}",
-                device_id
+                "Unable find associated room for device: {device_id}"
             ))
             .unwrap();
         }
@@ -333,7 +332,7 @@ impl<'a> CommandHandler<'a> {
 
                                 for device in devices {
                                     found = true;
-                                    self.write_response(&format!("{}", device)).unwrap();
+                                    self.write_response(&device.to_string()).unwrap();
                                 }
                             }
                         }
@@ -344,7 +343,7 @@ impl<'a> CommandHandler<'a> {
                     }
                 }
                 Err(msg) => {
-                    self.write_response(&format!("{}", msg)).unwrap();
+                    self.write_response(&msg.to_string()).unwrap();
                 }
             },
         }
@@ -376,7 +375,7 @@ impl<'a> CommandHandler<'a> {
 
         let id = home.id.clone();
         if let Err(msg) = self.update_home_state(home) {
-            self.write_response(&format!("Unable to save changes: {}", msg))
+            self.write_response(&format!("Unable to save changes: {msg}"))
                 .unwrap();
         } else {
             self.write_response(&id).unwrap();
@@ -399,7 +398,7 @@ impl<'a> CommandHandler<'a> {
                 home.rooms.push(new_room);
 
                 if let Err(msg) = self.update_home_state(home) {
-                    self.write_response(&format!("Unable to save changes: {}", msg))
+                    self.write_response(&format!("Unable to save changes: {msg}"))
                         .unwrap();
                 } else {
                     self.write_response(&id).unwrap();
@@ -455,7 +454,7 @@ impl<'a> CommandHandler<'a> {
                 home.rooms = rooms;
 
                 if let Err(msg) = self.update_home_state(home) {
-                    self.write_response(&format!("Unable to save changes: {}", msg))
+                    self.write_response(&format!("Unable to save changes: {msg}"))
                         .unwrap();
                 } else {
                     self.write_response(&id).unwrap();
@@ -485,7 +484,7 @@ impl<'a> CommandHandler<'a> {
                     let new_state: Vec<Home> = homes.into_iter().filter(|h| h.id != id).collect();
 
                     if let Err(msg) = self.update_state(Some(new_state)) {
-                        self.write_response(&format!("Unable to save changes: {}", msg))
+                        self.write_response(&format!("Unable to save changes: {msg}"))
                             .unwrap();
                     } else {
                         self.write_response(id).unwrap();
@@ -493,7 +492,7 @@ impl<'a> CommandHandler<'a> {
                 }
             }
             Err(msg) => {
-                self.write_response(&format!("Unable remove home: {}", msg))
+                self.write_response(&format!("Unable remove home: {msg}"))
                     .unwrap();
             }
         }
@@ -517,7 +516,7 @@ impl<'a> CommandHandler<'a> {
                         new_state.push(home);
 
                         if let Err(msg) = self.update_state(Some(new_state)) {
-                            self.write_response(&format!("Unable to save changes: {}", msg))
+                            self.write_response(&format!("Unable to save changes: {msg}"))
                                 .unwrap();
                         } else {
                             self.write_response(id).unwrap();
@@ -526,7 +525,7 @@ impl<'a> CommandHandler<'a> {
                 }
             }
             Err(msg) => {
-                self.write_response(&format!("Unable remove home: {}", msg))
+                self.write_response(&format!("Unable remove home: {msg}"))
                     .unwrap();
             }
         }
@@ -549,7 +548,7 @@ impl<'a> CommandHandler<'a> {
                 home.rooms = new_rooms;
 
                 if let Err(msg) = self.update_home_state(home) {
-                    self.write_response(&format!("Unable to save changes: {}", msg))
+                    self.write_response(&format!("Unable to save changes: {msg}"))
                         .unwrap();
                 } else {
                     self.write_response(id).unwrap();
@@ -562,7 +561,7 @@ impl<'a> CommandHandler<'a> {
                 .unwrap();
             }
         } else {
-            self.write_response(&format!("Unable find associated room for device: {}", id))
+            self.write_response(&format!("Unable find associated room for device: {id}"))
                 .unwrap();
         }
     }
@@ -585,7 +584,7 @@ impl<'a> CommandHandler<'a> {
                         None => self.write_response("None").unwrap(),
                         Some(v) => self.write_response(&v.to_string()).unwrap(),
                     },
-                    Err(msg) => self.write_response(&format!("{}", msg)).unwrap(),
+                    Err(msg) => self.write_response(&msg.to_string()).unwrap(),
                 },
             },
         }
@@ -607,7 +606,7 @@ impl<'a> CommandHandler<'a> {
                 self.write_response(&device_ids.join("\n")).unwrap();
             }
             Err(msg) => {
-                self.write_response(&format!("{}", msg)).unwrap();
+                self.write_response(&msg.to_string()).unwrap();
             }
         }
     }
@@ -626,7 +625,7 @@ impl<'a> CommandHandler<'a> {
                 self.write_response(&room_ids.join("\n")).unwrap();
             }
             Err(msg) => {
-                self.write_response(&format!("{}", msg)).unwrap();
+                self.write_response(&msg.to_string()).unwrap();
             }
         }
     }
@@ -643,7 +642,7 @@ impl<'a> CommandHandler<'a> {
                 self.write_response(&home_ids.join("\n")).unwrap();
             }
             Err(msg) => {
-                self.write_response(&format!("{}", msg)).unwrap();
+                self.write_response(&msg.to_string()).unwrap();
             }
         }
     }

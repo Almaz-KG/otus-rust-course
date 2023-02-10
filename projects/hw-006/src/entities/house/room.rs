@@ -29,7 +29,7 @@ impl Room {
 /// room
 impl Display for Room {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> FmtResult {
-        let devices_report: Vec<String> = self.devices.iter().map(|d| format!("{}", d)).collect();
+        let devices_report: Vec<String> = self.devices.iter().map(|d| d.to_string()).collect();
 
         let txt = format!(
             "Room: {}, Description: {}\n\t\t{}",
@@ -40,7 +40,7 @@ impl Display for Room {
             devices_report.join("\n\t\t")
         );
 
-        write!(formatter, "{}", txt)
+        write!(formatter, "{txt}")
     }
 }
 
@@ -56,7 +56,7 @@ impl Reportable for Room {
 
                 match report {
                     Ok(report) => report,
-                    Err(err) => format!("Error occurred: {}", err),
+                    Err(err) => format!("Error occurred: {err}"),
                 }
             })
             .collect();

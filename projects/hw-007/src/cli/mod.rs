@@ -6,7 +6,7 @@ pub use command_handler::*;
 
 use std::io;
 
-pub struct Cli {}
+pub struct Cli;
 
 impl Cli {
     pub fn run(args: Arguments) {

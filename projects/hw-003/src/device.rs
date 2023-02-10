@@ -12,7 +12,7 @@ pub enum SocketStatus {
 
 impl Display for SocketStatus {
     fn fmt(&self, formatter: &mut Formatter) -> Result {
-        write!(formatter, "{}", format!("{:?}", self).to_lowercase())
+        write!(formatter, "{}", format!("{self:?}").to_lowercase())
     }
 }
 
@@ -71,7 +71,7 @@ impl Display for Socket {
             self.status
         );
 
-        write!(formatter, "{}", txt)
+        write!(formatter, "{txt}")
     }
 }
 
@@ -108,7 +108,7 @@ impl Display for Thermometer {
             self.description.clone().unwrap_or_default()
         );
 
-        write!(formatter, "{}", txt)
+        write!(formatter, "{txt}")
     }
 }
 

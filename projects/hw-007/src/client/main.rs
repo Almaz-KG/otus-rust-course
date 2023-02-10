@@ -15,13 +15,13 @@ impl TcpClient {
 
     fn write_to_console(&self, content: &str) -> Result<(), String> {
         if !content.is_empty() {
-            print!("{}", content);
+            print!("{content}");
             if content.as_bytes()[content.len() - 1] != b'\n' {
                 println!();
             }
             stdout()
                 .flush()
-                .map_err(|e| format!("Couldn't flush stdout: {:?}", e))?;
+                .map_err(|e| format!("Couldn't flush stdout: {e:?}"))?;
         }
         Ok(())
     }
@@ -30,7 +30,7 @@ impl TcpClient {
         print!("->");
         stdout()
             .flush()
-            .map_err(|e| format!("Couldn't flush stdout: {:?}", e))?;
+            .map_err(|e| format!("Couldn't flush stdout: {e:?}"))?;
 
         Ok(())
     }
@@ -51,11 +51,11 @@ impl TcpClient {
     fn write_data(&self, socket: &mut TcpStream, data: &[u8]) -> Result<(), String> {
         socket
             .set_write_timeout(Some(Duration::from_secs(3)))
-            .map_err(|e| format!("Unable to set write timeout: {:?}", e))?;
+            .map_err(|e| format!("Unable to set write timeout: {e:?}"))?;
 
         socket
             .write_all(data)
-            .map_err(|e| format!("Error: {:?}", e))?;
+            .map_err(|e| format!("Error: {e:?}"))?;
         Ok(())
     }
 
@@ -68,7 +68,7 @@ impl TcpClient {
         let handshake = self.read_data(&mut stream)?;
 
         if handshake.trim() != "handshake" {
-            return Err(format!("Expected handshake message, but got {}", handshake));
+            return Err(format!("Expected handshake message, but got {handshake}"));
         }
 
         println!(

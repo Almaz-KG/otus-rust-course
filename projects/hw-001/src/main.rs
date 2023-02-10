@@ -2,7 +2,7 @@ use std::vec::Vec;
 
 fn print_result(result: &Vec<String>) {
     for r in result {
-        println!("{}", r)
+        println!("{r}")
     }
 }
 
@@ -12,7 +12,7 @@ fn functional_approach(count: usize) -> Vec<String> {
             (0, 0) => String::from("FizzBuzz"),
             (0, _) => String::from("Fizz"),
             (_, 0) => String::from("Buzz"),
-            (_, _) => format!("{}", i),
+            (_, _) => i.to_string(),
         })
         .collect()
 }
@@ -24,7 +24,7 @@ fn imperative_approach(count: usize) -> Vec<String> {
             (0, 0) => String::from("FizzBuzz"),
             (0, _) => String::from("Fizz"),
             (_, 0) => String::from("Buzz"),
-            (_, _) => format!("{}", i),
+            (_, _) => i.to_string(),
         };
         result.push(s);
     }

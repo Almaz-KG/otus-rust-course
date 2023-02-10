@@ -15,7 +15,7 @@ impl Room {
 
 impl Display for Room {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
-        let devices_report: Vec<String> = self.devices.iter().map(|d| format!("{}", d)).collect();
+        let devices_report: Vec<String> = self.devices.iter().map(|d| d.to_string()).collect();
 
         let txt = format!(
             "Room: {}, Description: {}\n\t\t{}",
@@ -24,7 +24,7 @@ impl Display for Room {
             devices_report.join("\n\t\t")
         );
 
-        write!(formatter, "{}", txt)
+        write!(formatter, "{txt}")
     }
 }
 
@@ -123,7 +123,7 @@ impl House {
 
 impl Display for House {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
-        let rooms_report: Vec<String> = self.rooms.iter().map(|d| format!("{}", d)).collect();
+        let rooms_report: Vec<String> = self.rooms.iter().map(|d| d.to_string()).collect();
 
         let txt = format!(
             "House: {}, Description: {}\n\t {}",
@@ -131,7 +131,7 @@ impl Display for House {
             self.description.clone().unwrap_or_default(),
             rooms_report.join("\n\t")
         );
-        write!(formatter, "{}", txt)
+        write!(formatter, "{txt}")
     }
 }
 

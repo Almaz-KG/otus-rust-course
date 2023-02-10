@@ -8,7 +8,7 @@ fn show_usage_of_home_entity() {
         .build()
         .expect("Unable create home");
 
-    println!("{}", home);
+    println!("{home}");
 }
 
 fn show_usage_of_room_entity() {
@@ -18,13 +18,13 @@ fn show_usage_of_room_entity() {
         .build()
         .expect("Unable create room");
 
-    println!("{}", room);
+    println!("{room}");
 }
 
 fn show_usage_of_socket_entity() {
     let socket = Socket::new("Main light socket", "Located near the entry door");
 
-    println!("{}", socket);
+    println!("{socket}");
 }
 
 fn show_usage_of_thermometer_entity() {
@@ -33,7 +33,7 @@ fn show_usage_of_thermometer_entity() {
         "Super old mercury thermometer",
     );
 
-    println!("{}", thermometer);
+    println!("{thermometer}");
 }
 
 fn main() {

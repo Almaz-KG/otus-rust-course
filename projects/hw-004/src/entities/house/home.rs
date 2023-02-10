@@ -55,7 +55,7 @@ impl Home {
 /// description of all children entities.
 impl Display for Home {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
-        let rooms_report: Vec<String> = self.rooms.iter().map(|d| format!("{}", d)).collect();
+        let rooms_report: Vec<String> = self.rooms.iter().map(|d| d.to_string()).collect();
 
         let txt = format!(
             "House: {}, Description: {}\n\t {}",
@@ -65,7 +65,7 @@ impl Display for Home {
                 .unwrap_or_else(|| "[No description]".to_string()),
             rooms_report.join("\n\t")
         );
-        write!(formatter, "{}", txt)
+        write!(formatter, "{txt}")
     }
 }
 

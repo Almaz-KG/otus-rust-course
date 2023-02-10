@@ -50,7 +50,7 @@ impl Display for Thermometer {
                 .unwrap_or_else(|| "[No description]".to_string())
         );
 
-        write!(formatter, "{}", txt)
+        write!(formatter, "{txt}")
     }
 }
 

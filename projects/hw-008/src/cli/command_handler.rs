@@ -51,7 +51,7 @@ impl<'a> CommandHandler<'a> {
             match smart_home_manager.initialize_smart_home() {
                 Ok(_) => self.smart_home_manager = smart_home_manager,
                 Err(msg) => self
-                    .write_response(&format!("Unable initialize repository {}", msg))
+                    .write_response(&format!("Unable initialize repository {msg}"))
                     .unwrap(),
             };
         } else {
@@ -69,7 +69,7 @@ impl<'a> CommandHandler<'a> {
                         self.write_response("Not found").unwrap()
                     } else {
                         for home in homes {
-                            self.write_response(&format!("{}", home)).unwrap();
+                            self.write_response(&home.to_string()).unwrap();
                         }
                     }
                 }
@@ -82,7 +82,7 @@ impl<'a> CommandHandler<'a> {
                 }
             },
             Err(msg) => {
-                self.write_response(&format!("{}", msg)).unwrap();
+                self.write_response(&msg.to_string()).unwrap();
             }
         }
     }
@@ -98,7 +98,7 @@ impl<'a> CommandHandler<'a> {
 
                         for room in rooms {
                             found = true;
-                            self.write_response(&format!("{}", room)).unwrap();
+                            self.write_response(&room.to_string()).unwrap();
                         }
                     }
 
@@ -108,7 +108,7 @@ impl<'a> CommandHandler<'a> {
                 }
             }
             Err(msg) => {
-                self.write_response(&format!("{}", msg)).unwrap();
+                self.write_response(&msg.to_string()).unwrap();
             }
         }
     }
@@ -122,7 +122,7 @@ impl<'a> CommandHandler<'a> {
                 self.write_response(device_id).unwrap();
             }
             Err(msg) => {
-                self.write_response(&format!("{}", msg)).unwrap();
+                self.write_response(&msg.to_string()).unwrap();
             }
         }
     }
@@ -149,7 +149,7 @@ impl<'a> CommandHandler<'a> {
             (_, _) => match self.smart_home_manager.find_device_by_id(device_id) {
                 None => self.write_response("Not found").unwrap(),
                 Some(device) => {
-                    self.write_response(&format!("{}", device)).unwrap();
+                    self.write_response(&device.to_string()).unwrap();
                 }
             },
         }
@@ -169,7 +169,7 @@ impl<'a> CommandHandler<'a> {
             .create_home(create_home.name, create_home.description)
         {
             Ok(home_id) => self.write_response(&home_id).unwrap(),
-            Err(msg) => self.write_response(&format!("{}", msg)).unwrap(),
+            Err(msg) => self.write_response(&msg.to_string()).unwrap(),
         }
     }
 
@@ -179,7 +179,7 @@ impl<'a> CommandHandler<'a> {
             .create_room(room.home_id, room.name, room.description)
         {
             Ok(room_id) => self.write_response(&room_id).unwrap(),
-            Err(msg) => self.write_response(&format!("{}", msg)).unwrap(),
+            Err(msg) => self.write_response(&msg.to_string()).unwrap(),
         }
     }
 
@@ -191,7 +191,7 @@ impl<'a> CommandHandler<'a> {
             device.description,
         ) {
             Ok(device_id) => self.write_response(&device_id).unwrap(),
-            Err(msg) => self.write_response(&format!("{}", msg)).unwrap(),
+            Err(msg) => self.write_response(&msg.to_string()).unwrap(),
         }
     }
 
@@ -206,21 +206,21 @@ impl<'a> CommandHandler<'a> {
     fn remove_home_by_id(&mut self, id: &str) {
         match self.smart_home_manager.remove_home(&id.to_string()) {
             Ok(id) => self.write_response(&id).unwrap(),
-            Err(msg) => self.write_response(&format!("{}", msg)).unwrap(),
+            Err(msg) => self.write_response(&msg.to_string()).unwrap(),
         }
     }
 
     fn remove_room_by_id(&mut self, id: &str) {
         match self.smart_home_manager.remove_room(&id.to_string()) {
             Ok(id) => self.write_response(&id).unwrap(),
-            Err(msg) => self.write_response(&format!("{}", msg)).unwrap(),
+            Err(msg) => self.write_response(&msg.to_string()).unwrap(),
         }
     }
 
     fn remove_device_by_id(&mut self, id: &str) {
         match self.smart_home_manager.remove_device(&id.to_string()) {
             Ok(id) => self.write_response(&id).unwrap(),
-            Err(msg) => self.write_response(&format!("{}", msg)).unwrap(),
+            Err(msg) => self.write_response(&msg.to_string()).unwrap(),
         }
     }
 
@@ -235,7 +235,7 @@ impl<'a> CommandHandler<'a> {
     fn handle_measure_command(&mut self, device_id: &str) {
         match self.smart_home_manager.make_measure(&device_id.to_string()) {
             Ok(ms_result) => self.write_response(&ms_result).unwrap(),
-            Err(msg) => self.write_response(&format!("{}", msg)).unwrap(),
+            Err(msg) => self.write_response(&msg.to_string()).unwrap(),
         }
     }
 
@@ -247,7 +247,7 @@ impl<'a> CommandHandler<'a> {
                 let response = ids.join("\n");
                 self.write_response(&response).unwrap();
             }
-            Err(msg) => self.write_response(&format!("{}", msg)).unwrap(),
+            Err(msg) => self.write_response(&msg.to_string()).unwrap(),
         }
     }
 
@@ -259,7 +259,7 @@ impl<'a> CommandHandler<'a> {
                 let response = ids.join("\n");
                 self.write_response(&response).unwrap();
             }
-            Err(msg) => self.write_response(&format!("{}", msg)).unwrap(),
+            Err(msg) => self.write_response(&msg.to_string()).unwrap(),
         }
     }
 
@@ -271,7 +271,7 @@ impl<'a> CommandHandler<'a> {
                 let response = ids.join("\n");
                 self.write_response(&response).unwrap();
             }
-            Err(msg) => self.write_response(&format!("{}", msg)).unwrap(),
+            Err(msg) => self.write_response(&msg.to_string()).unwrap(),
         }
     }
 

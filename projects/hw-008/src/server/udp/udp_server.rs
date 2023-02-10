@@ -26,7 +26,7 @@ impl UdpServer {
 
             match socket.recv_from(&mut buf) {
                 Ok((_, src_addr)) => {
-                    println!("[UdpServer] Connected with {}", src_addr);
+                    println!("[UdpServer] Connected with {src_addr}");
                     server.active_connections.lock().unwrap().push(src_addr);
                 }
                 Err(_) => {
@@ -56,7 +56,7 @@ impl UdpServer {
                         for addr in connections.iter() {
                             let id = therm.id.clone();
                             let value = therm.measure().unwrap().unwrap();
-                            let measure = format!("[{}][{}]: {}\n", Utc::now(), id, value);
+                            let measure = format!("[{}][{id}]: {value}\n", Utc::now());
 
                             socket.send_to(measure.as_bytes(), addr).unwrap();
                         }
@@ -86,7 +86,7 @@ impl UdpServer {
                 UdpServer::listen(server.clone());
                 UdpServer::send_updates(server);
 
-                println!("Running Udp server on {}", addr);
+                println!("Running Udp server on {addr}");
             }
             Err(_) => {
                 eprintln!("Unable to start Udp Server...")

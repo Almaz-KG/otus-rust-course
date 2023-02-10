@@ -23,25 +23,25 @@ impl RemoveFunctions for SmartHomeManager {
                     let new_state: Vec<Home> = homes.into_iter().filter(|h| h.id != *id).collect();
                     match self.update_state(Some(new_state)) {
                         Ok(_) => Ok(id.clone()),
-                        Err(msg) => Err(anyhow!(format!("Unable to save changes: {}", msg))),
+                        Err(msg) => Err(anyhow!(format!("Unable to save changes: {msg}"))),
                     }
                 } else {
-                    Err(anyhow!(format!("Home {} not found", id)))
+                    Err(anyhow!(format!("Home {id} not found")))
                 }
             }
-            Err(msg) => Err(anyhow!(format!("Unable remove home: {}", msg))),
+            Err(msg) => Err(anyhow!(format!("Unable remove home: {msg}"))),
         }
     }
 
     fn remove_room(&self, id: &RoomId) -> Result<RoomId> {
         match self.find_home_by_room_id(id) {
-            None => Err(anyhow!(format!("Home not found for room {}", id))),
+            None => Err(anyhow!(format!("Home not found for room {id}"))),
             Some(mut home) => {
                 home.rooms.retain(|r| r.id != *id);
 
                 match self.update_home_state(home) {
                     Ok(_) => Ok(id.clone()),
-                    Err(msg) => Err(anyhow!(format!("Unable to save changes: {}", msg))),
+                    Err(msg) => Err(anyhow!(format!("Unable to save changes: {msg}"))),
                 }
             }
         }
@@ -57,7 +57,7 @@ impl RemoveFunctions for SmartHomeManager {
 
                 match self.update_home_state(home) {
                     Ok(_) => Ok(id.clone()),
-                    Err(msg) => Err(anyhow!(format!("Unable to save changes: {}", msg))),
+                    Err(msg) => Err(anyhow!(format!("Unable to save changes: {msg}"))),
                 }
             } else {
                 Err(anyhow!(format!(
@@ -67,8 +67,7 @@ impl RemoveFunctions for SmartHomeManager {
             }
         } else {
             Err(anyhow!(format!(
-                "Unable find associated room for device: {}",
-                id
+                "Unable find associated room for device: {id}"
             )))
         }
     }

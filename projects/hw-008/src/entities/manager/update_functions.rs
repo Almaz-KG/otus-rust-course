@@ -32,7 +32,7 @@ impl UpdateFunctions for SmartHomeManager {
 
                 match self.update_home_state(home) {
                     Ok(_) => Ok(()),
-                    Err(msg) => Err(anyhow!(format!("{}", msg))),
+                    Err(msg) => Err(anyhow!(msg.to_string())),
                 }
             } else {
                 Err(anyhow!(format!(
@@ -42,8 +42,7 @@ impl UpdateFunctions for SmartHomeManager {
             }
         } else {
             Err(anyhow!(format!(
-                "Unable find associated room for device: {}",
-                device_id
+                "Unable find associated room for device: {device_id}"
             )))
         }
     }

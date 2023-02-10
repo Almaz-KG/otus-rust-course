@@ -43,7 +43,7 @@ impl Display for Room {
             devices_report.join(", ")
         );
 
-        write!(formatter, "{}", txt)
+        write!(formatter, "{txt}")
     }
 }
 
@@ -59,7 +59,7 @@ impl Reportable for Room {
 
                 match report {
                     Ok(report) => report,
-                    Err(err) => format!("Error occurred: {}", err),
+                    Err(err) => format!("Error occurred: {err}"),
                 }
             })
             .collect();

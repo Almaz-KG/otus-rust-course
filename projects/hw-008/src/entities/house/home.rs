@@ -64,7 +64,7 @@ impl Display for Home {
                 .unwrap_or_else(|| "[No description]".to_string()),
             rooms.join(",")
         );
-        write!(formatter, "{}", txt)
+        write!(formatter, "{txt}")
     }
 }
 
@@ -80,7 +80,7 @@ impl Reportable for Home {
 
                 match report {
                     Ok(report) => report,
-                    Err(err) => format!("Error occurred: {}", err),
+                    Err(err) => format!("Error occurred: {err}"),
                 }
             })
             .collect();

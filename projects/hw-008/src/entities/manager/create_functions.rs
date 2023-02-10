@@ -41,7 +41,7 @@ impl CreateFunctions for SmartHomeManager {
 
         match self.update_home_state(home) {
             Ok(_) => Ok(id),
-            Err(msg) => Err(anyhow!("Unable to create home: {}", msg)),
+            Err(msg) => Err(anyhow!("Unable to create home: {msg}")),
         }
     }
 
@@ -68,7 +68,7 @@ impl CreateFunctions for SmartHomeManager {
                 self.update_home_state(home)?;
                 Ok(id)
             }
-            _ => Err(anyhow!(format!("Home with id: {} not found", home_id))),
+            _ => Err(anyhow!(format!("Home with id: {home_id} not found"))),
         }
     }
 
@@ -107,10 +107,7 @@ impl CreateFunctions for SmartHomeManager {
                 room.devices.push(device);
 
                 match self.find_home_by_room_id(&room.id) {
-                    None => Err(anyhow!(
-                        "Unable to find associated home to {} room",
-                        room_id
-                    )),
+                    None => Err(anyhow!("Unable to find associated home to {room_id} room")),
                     Some(mut home) => {
                         let mut rooms: Vec<Room> = home
                             .rooms
@@ -124,12 +121,12 @@ impl CreateFunctions for SmartHomeManager {
 
                         match self.update_home_state(home) {
                             Ok(_) => Ok(id),
-                            Err(msg) => Err(anyhow!("Unable to save changes: {}", msg)),
+                            Err(msg) => Err(anyhow!("Unable to save changes: {msg}")),
                         }
                     }
                 }
             }
-            None => Err(anyhow!(format!("Room with id: {} not found", room_id))),
+            None => Err(anyhow!(format!("Room with id: {room_id} not found"))),
         }
     }
 }

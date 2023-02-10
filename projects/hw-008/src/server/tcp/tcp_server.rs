@@ -17,7 +17,7 @@ impl TcpServer {
         let addr = listener.local_addr().unwrap();
 
         thread::spawn(move || {
-            println!("Running Tcp server on {}", addr);
+            println!("Running Tcp server on {addr}");
 
             for stream in listener.incoming() {
                 thread::spawn(move || {

@@ -64,7 +64,7 @@ impl Display for ConnectionStatus {
             ConnectionStatus::Disconnected => formatter.write_str("Disconnected"),
             ConnectionStatus::Handshaked => formatter.write_str("Handshaked"),
             ConnectionStatus::WaitingForCommand => formatter.write_str("Waiting for command"),
-            ConnectionStatus::Error(msg) => formatter.write_str(&format!("Error: {}", msg)),
+            ConnectionStatus::Error(msg) => formatter.write_str(&format!("Error: {msg}")),
         }
     }
 }
@@ -144,7 +144,7 @@ impl TcpSession {
                     ConnectionStatus::Error("handshake was expected".into())
                 }
             }
-            Err(msg) => ConnectionStatus::Error(format!("Error in handshake step {}", msg)),
+            Err(msg) => ConnectionStatus::Error(format!("Error in handshake step {msg}")),
         };
 
         self.status = status;
@@ -216,7 +216,7 @@ impl TcpSession {
                     println!("[Server][Command] Command executed");
                 }
                 Err(msg) => {
-                    return Err(anyhow!(format!("Unable read command: {}", msg)));
+                    return Err(anyhow!(format!("Unable read command: {msg}")));
                 }
             }
             session.print_state();
@@ -238,7 +238,7 @@ mod tests {
             Ok(_) => {}
             Err(e) => {
                 let error_message = e.render().to_string();
-                println!("{}", error_message);
+                println!("{error_message}");
             }
         }
     }
@@ -253,7 +253,7 @@ mod tests {
             Ok(_) => {}
             Err(e) => {
                 let error_message = e.render().to_string();
-                eprintln!("{}", error_message);
+                eprintln!("{error_message}");
             }
         }
     }

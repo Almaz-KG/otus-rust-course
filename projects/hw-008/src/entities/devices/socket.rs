@@ -146,7 +146,7 @@ impl Display for Socket {
                 .unwrap_or_else(|| "[No description]".to_string())
         );
 
-        write!(formatter, "{}", txt)
+        write!(formatter, "{txt}")
     }
 }
 

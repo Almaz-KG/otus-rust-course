@@ -69,7 +69,7 @@ impl SmartHomeManager {
         let reader = BufReader::new(file);
 
         let state: SavedSmartHome = serde_json::from_reader(reader)
-            .map_err(|e| format!("{}", e))
+            .map_err(|e| e.to_string())
             .expect("Unable deserialize the smart-home state");
 
         Ok(state)
@@ -85,7 +85,7 @@ impl SmartHomeManager {
                         None => Err(anyhow!("N/A")),
                         Some(v) => Ok(v.to_string()),
                     },
-                    Err(msg) => Err(anyhow!(format!("{}", msg))),
+                    Err(msg) => Err(anyhow!(msg.to_string())),
                 },
             },
         }
@@ -106,7 +106,7 @@ impl SmartHomeManager {
                 }
                 Ok(devices)
             }
-            Err(msg) => Err(anyhow!(format!("Unable list of devices: {}", msg))),
+            Err(msg) => Err(anyhow!(format!("Unable list of devices: {msg}"))),
         }
     }
 
@@ -123,7 +123,7 @@ impl SmartHomeManager {
                 }
                 Ok(rooms)
             }
-            Err(msg) => Err(anyhow!(format!("Unable list of rooms: {}", msg))),
+            Err(msg) => Err(anyhow!(format!("Unable list of rooms: {msg}"))),
         }
     }
 
@@ -133,7 +133,7 @@ impl SmartHomeManager {
                 None => Ok(vec![]),
                 Some(homes) => Ok(homes),
             },
-            Err(msg) => Err(anyhow!(format!("Unable list of rooms: {}", msg))),
+            Err(msg) => Err(anyhow!(format!("Unable list of rooms: {msg}"))),
         }
     }
 }

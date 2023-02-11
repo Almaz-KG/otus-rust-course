@@ -319,6 +319,9 @@ dependencies = [
 [[package]]
 name = "hw-008-thread-pool"
 version = "0.1.0"
+dependencies = [
+ "rand",
+]
 
 [[package]]
 name = "iana-time-zone"
